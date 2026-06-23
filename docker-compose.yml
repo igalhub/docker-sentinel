@@ -1,0 +1,15 @@
+# Run `python -m checker.check` at least once before starting the dashboard
+# so that results.db exists (Docker creates a directory if the source file is absent).
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: dashboard/Dockerfile
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./results.db:/app/results.db:ro
+      - ./config/settings.yaml:/app/config/settings.yaml:ro
+    environment:
+      - SENTINEL_DB_PATH=/app/results.db
+      - SENTINEL_CONFIG_PATH=/app/config/settings.yaml
