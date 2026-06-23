@@ -1,5 +1,7 @@
 # docker-sentinel
 
+![docker-sentinel dashboard](docs/screenshot.png)
+
 [![CI](https://github.com/igalhub/docker-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/igalhub/docker-sentinel/actions/workflows/ci.yml)
 
 A lightweight container health monitor that detects the Docker containers
