@@ -5,8 +5,6 @@
 A lightweight container health monitor that detects the Docker containers
 `docker ps` shows as "running" but are silently broken.
 
-![docker-sentinel dashboard](docs/screenshot.png)
-
 > **What this is:** A standalone monitoring tool, not a replacement for
 > a full observability stack. It covers the gap between "container is up"
 > (what Docker tells you) and "container is actually healthy" (what you
@@ -212,7 +210,8 @@ python -m checker.check
 docker compose up dashboard
 ```
 
-Dashboard at **http://localhost:8080**.
+Dashboard at **http://localhost:8081** (host port configured in `docker-compose.yml` — change
+`8081:8080` to `8080:8080` if that port is free on your machine).
 
 **Direct:**
 
