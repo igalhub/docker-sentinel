@@ -1,0 +1,30 @@
+# docker-sentinel configuration
+# Copy this file to config/settings.yaml and adjust as needed.
+# All thresholds are configurable — defaults are suitable for most setups.
+
+checker:
+  interval_seconds: 300        # How often the systemd timer runs (5 minutes)
+
+thresholds:
+  restart:
+    warning: 3                 # RestartCount > N triggers warning
+    critical: 10               # RestartCount > N triggers critical
+
+  uptime:
+    warning_seconds: 300       # Uptime < N seconds triggers warning (5 minutes)
+    critical_seconds: 60       # Uptime < N seconds triggers critical
+
+  healthcheck:
+    starting_warning_seconds: 300  # Stuck in 'starting' for > N seconds triggers warning
+
+  port:
+    timeout_seconds: 5         # TCP connect timeout before marking critical
+    warning_ms: 2000           # Connect time > N ms triggers warning (2 seconds)
+
+  log_silence:
+    warning_hours: 2           # No log output for > N hours triggers warning
+    critical_hours: 6          # No log output for > N hours triggers critical
+
+dashboard:
+  port: 8080
+  stale_multiplier: 2          # Flag results as stale after N * interval_seconds
