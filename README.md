@@ -1,5 +1,7 @@
 # docker-sentinel
 
+[![CI](https://github.com/igalhub/docker-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/igalhub/docker-sentinel/actions/workflows/ci.yml)
+
 A lightweight container health monitor that detects the Docker containers
 `docker ps` shows as "running" but are silently broken.
 
