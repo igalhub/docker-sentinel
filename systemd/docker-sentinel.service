@@ -1,0 +1,12 @@
+# This file is a documentation template. install.sh generates the installed
+# version with absolute paths from the actual project directory.
+[Unit]
+Description=docker-sentinel container health checker
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/path/to/docker-sentinel
+ExecStart=/path/to/docker-sentinel/.venv/bin/python -m checker.check
+StandardOutput=journal
+StandardError=journal
