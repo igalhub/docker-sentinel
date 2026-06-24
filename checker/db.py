@@ -25,8 +25,8 @@ def init_db(path: str) -> None:
     conn = _get_conn(path)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS container_checks (
-            container_id TEXT PRIMARY KEY,
-            name         TEXT NOT NULL,
+            name         TEXT PRIMARY KEY,
+            container_id TEXT NOT NULL,
             image        TEXT NOT NULL,
             status       TEXT NOT NULL,
             checks       TEXT NOT NULL,
@@ -43,12 +43,12 @@ def write_results(path: str, results: list[dict]) -> None:
         conn.execute(
             """
             INSERT OR REPLACE INTO container_checks
-                (container_id, name, image, status, checks, severity, checked_at)
+                (name, container_id, image, status, checks, severity, checked_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                r["container_id"],
                 r["name"],
+                r["container_id"],
                 r["image"],
                 r["status"],
                 json.dumps(r["checks"]),
