@@ -101,13 +101,13 @@
                 <td class="text-muted">{{ c.image }}</td>
                 <td>
                   {% if c.severity == "critical" %}
-                    <span class="badge bg-danger"><i class="ti ti-alert-circle me-1"></i>critical</span>
+                    <span class="badge" style="background:#FAECE7;color:#993C1D;border-radius:50rem"><i class="ti ti-alert-circle me-1"></i>critical</span>
                   {% elif c.severity == "warning" %}
-                    <span class="badge bg-warning text-dark"><i class="ti ti-alert-triangle me-1"></i>warning</span>
+                    <span class="badge" style="background:#FAEEDA;color:#854F0B;border-radius:50rem"><i class="ti ti-alert-triangle me-1"></i>warning</span>
                   {% elif c.severity == "healthy" %}
-                    <span class="badge bg-success"><i class="ti ti-circle-check me-1"></i>healthy</span>
+                    <span class="badge" style="background:#E1F5EE;color:#0F6E56;border-radius:50rem"><i class="ti ti-circle-check me-1"></i>healthy</span>
                   {% else %}
-                    <span class="badge bg-secondary"><i class="ti ti-question-mark me-1"></i>{{ c.severity }}</span>
+                    <span class="badge" style="background:#F1F1F1;color:#666;border-radius:50rem"><i class="ti ti-question-mark me-1"></i>{{ c.severity }}</span>
                   {% endif %}
                 </td>
                 <td class="text-muted">{{ c.checked_at[:19] | replace("T", " ") }}</td>
@@ -128,13 +128,13 @@
                       <div class="card-body py-2 px-3">
                         <div class="fw-semibold text-uppercase small mb-1">{{ check_name }}</div>
                         {% if check.severity == "critical" %}
-                          <span class="badge bg-danger mb-1">critical</span>
+                          <span class="badge mb-1" style="background:#FAECE7;color:#993C1D;border-radius:50rem">critical</span>
                         {% elif check.severity == "warning" %}
-                          <span class="badge bg-warning text-dark mb-1">warning</span>
+                          <span class="badge mb-1" style="background:#FAEEDA;color:#854F0B;border-radius:50rem">warning</span>
                         {% elif check.severity == "healthy" %}
-                          <span class="badge bg-success mb-1">healthy</span>
+                          <span class="badge mb-1" style="background:#E1F5EE;color:#0F6E56;border-radius:50rem">healthy</span>
                         {% else %}
-                          <span class="badge bg-secondary mb-1">{{ check.severity }}</span>
+                          <span class="badge mb-1" style="background:#F1F1F1;color:#666;border-radius:50rem">{{ check.severity }}</span>
                         {% endif %}
                         <div class="text-muted small">{{ check.detail }}</div>
                       </div>

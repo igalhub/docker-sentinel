@@ -1,5 +1,6 @@
 import time
 import uuid
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import docker
@@ -36,7 +37,8 @@ LIVE_CONFIG = {
     }
 }
 
-RECENT_TS = "2026-06-24T00:00:00.000000000Z"
+# Computed at module load — always "10 seconds ago", well within the 60s critical threshold.
+RECENT_TS = (datetime.now(timezone.utc) - timedelta(seconds=10)).strftime("%Y-%m-%dT%H:%M:%S.000000000Z")
 OLD_TS = "2020-01-01T00:00:00.000000000Z"
 
 
@@ -82,7 +84,6 @@ class TestParseDockerTime:
         assert dt.microsecond == 0
 
     def test_timezone_aware(self):
-        from datetime import timezone
         dt = _parse_docker_time("2026-06-24T00:00:00Z")
         assert dt.tzinfo is not None
         assert dt.utcoffset().total_seconds() == 0
