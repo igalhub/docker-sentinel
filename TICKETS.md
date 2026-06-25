@@ -17,7 +17,7 @@ Live test fixtures: real containers created via docker-py, cleaned up after each
 
 ## DS-001 — Repo scaffolding, .gitignore, LICENSE, directory skeleton
 
-**Status:** ACCEPTED
+**Status:** DONE
 **Depends on:** nothing
 
 **Description:**
@@ -46,7 +46,7 @@ Establish the repository baseline. No application logic. No credentials.
 
 ## DS-002 — `severity.py` — per-check and aggregate severity logic
 
-**Status:** ACCEPTED
+**Status:** DONE
 **Depends on:** DS-001
 
 **Description:**
@@ -82,7 +82,7 @@ No I/O, no Docker calls, no external deps.
 
 ## DS-003 — `docker_checker.py` — container inspection via docker-py
 
-**Status:** ACCEPTED
+**Status:** DONE
 **Depends on:** DS-002
 
 **Description:**
@@ -134,7 +134,7 @@ and run all four checks per container. No subprocess calls, no CLI.
 
 ## DS-004 — `db.py` + `check.py` — orchestration and persistence
 
-**Status:** ACCEPTED
+**Status:** DONE
 **Depends on:** DS-003
 
 **Description:**
@@ -167,7 +167,7 @@ per-container, per-check results.
 
 ## DS-005 — systemd timer + service
 
-**Status:** ACCEPTED
+**Status:** DONE
 **Depends on:** DS-004
 
 **Description:**
@@ -196,7 +196,7 @@ not done until the timer has actually fired and the service has run.
 
 ## DS-006 — `dashboard/main.py` — FastAPI read-only dashboard
 
-**Status:** ACCEPTED
+**Status:** DONE
 **Depends on:** DS-004
 
 **Description:**
@@ -236,7 +236,7 @@ aggregate severity per container, but which specific check failed and why.
 
 ## DS-007 — CI pipeline (GitHub Actions)
 
-**Status:** ACCEPTED
+**Status:** DONE
 **Depends on:** DS-006
 
 **Description:**
@@ -259,7 +259,7 @@ pass.
 
 ## DS-008 — README finalization + pre-publish audit
 
-**Status:** ACCEPTED
+**Status:** DONE
 **Depends on:** DS-007
 
 **Description:**
@@ -331,14 +331,14 @@ and can be polled by any external alerting system in the meantime.
 
 | Ticket | Title | Status |
 |---|---|---|
-| DS-001 | Repo scaffolding | ACCEPTED |
-| DS-002 | severity.py | ACCEPTED |
-| DS-003 | docker_checker.py | ACCEPTED |
-| DS-004 | db.py + check.py | ACCEPTED |
-| DS-005 | systemd timer | ACCEPTED |
-| DS-006 | dashboard | ACCEPTED |
-| DS-007 | CI pipeline | ACCEPTED |
-| DS-008 | README + audit | ACCEPTED |
+| DS-001 | Repo scaffolding | DONE |
+| DS-002 | severity.py | DONE |
+| DS-003 | docker_checker.py | DONE |
+| DS-004 | db.py + check.py | DONE |
+| DS-005 | systemd timer | DONE |
+| DS-006 | dashboard | DONE |
+| DS-007 | CI pipeline | DONE |
+| DS-008 | README + audit | DONE |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |
