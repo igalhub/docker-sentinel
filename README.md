@@ -133,8 +133,11 @@ FastAPI dashboard (separate process)
         ├── GET /status  → JSON: per-container aggregate + per-check breakdown
         └── GET /        → HTML table, color-coded by severity,
                            per-check detail, staleness indicator,
-                           dark/light mode toggle (persisted in localStorage)
+                           dark/light mode toggle
 ```
+
+The dashboard defaults to dark mode. Use the toggle button in the top right to switch to
+light mode — the preference is saved in `localStorage`.
 
 **Why two processes?** The checker and dashboard are deliberately
 separate. A dashboard crash doesn't stop checks from running. A checker
@@ -215,9 +218,6 @@ docker compose up dashboard
 
 Dashboard at **http://localhost:8081** (host port configured in `docker-compose.yml` — change
 `8081:8080` to `8080:8080` if that port is free on your machine).
-
-The dashboard defaults to dark mode. Use the toggle button in the top right to switch to
-light mode — the preference is saved in `localStorage`.
 
 **Direct:**
 
