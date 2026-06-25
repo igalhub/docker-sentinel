@@ -59,7 +59,7 @@ systemd timer (every 5 min)
               ├── healthcheck_check()   — Health.Status from container.attrs["State"]
               ├── port_check()          — TCP connect to published ports on localhost
               └── log_activity_check()  — container.logs(since=N_hours_ago, tail=1)
-        └── checker/db.py → results.db (SQLite, upsert by container_id)
+        └── checker/db.py → results.db (SQLite, upsert by container name)
 
 FastAPI dashboard (separate process)
   └── dashboard/main.py — READ-ONLY against results.db

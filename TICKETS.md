@@ -17,7 +17,7 @@ Live test fixtures: real containers created via docker-py, cleaned up after each
 
 ## DS-001 — Repo scaffolding, .gitignore, LICENSE, directory skeleton
 
-**Status:** OPEN
+**Status:** ACCEPTED
 **Depends on:** nothing
 
 **Description:**
@@ -46,7 +46,7 @@ Establish the repository baseline. No application logic. No credentials.
 
 ## DS-002 — `severity.py` — per-check and aggregate severity logic
 
-**Status:** OPEN
+**Status:** ACCEPTED
 **Depends on:** DS-001
 
 **Description:**
@@ -82,7 +82,7 @@ No I/O, no Docker calls, no external deps.
 
 ## DS-003 — `docker_checker.py` — container inspection via docker-py
 
-**Status:** OPEN
+**Status:** ACCEPTED
 **Depends on:** DS-002
 
 **Description:**
@@ -134,7 +134,7 @@ and run all four checks per container. No subprocess calls, no CLI.
 
 ## DS-004 — `db.py` + `check.py` — orchestration and persistence
 
-**Status:** OPEN
+**Status:** ACCEPTED
 **Depends on:** DS-003
 
 **Description:**
@@ -146,7 +146,7 @@ per-container, per-check results.
 - [ ] `checker/db.py` exports:
       - `init_db(path: str)` — creates schema if it doesn't exist
       - `write_results(path: str, results: list[dict])` — upserts by
-        `container_id`; stores per-check breakdown as JSON in a `checks`
+        container name; stores per-check breakdown as JSON in a `checks`
         column
       - `read_results(path: str) -> list[dict]`
       - `get_last_checked(path: str) -> datetime | None`
@@ -167,7 +167,7 @@ per-container, per-check results.
 
 ## DS-005 — systemd timer + service
 
-**Status:** OPEN
+**Status:** ACCEPTED
 **Depends on:** DS-004
 
 **Description:**
@@ -196,7 +196,7 @@ not done until the timer has actually fired and the service has run.
 
 ## DS-006 — `dashboard/main.py` — FastAPI read-only dashboard
 
-**Status:** OPEN
+**Status:** ACCEPTED
 **Depends on:** DS-004
 
 **Description:**
@@ -229,14 +229,14 @@ aggregate severity per container, but which specific check failed and why.
       start dashboard container, confirm `GET /status` `last_checked`
       timestamp matches the host checker run exactly
 - [ ] `pytest tests/test_dashboard.py -v` passes 0 failures
-- [ ] `docker compose up dashboard -d` → `curl http://localhost:8080/status`
+- [ ] `docker compose up dashboard -d` → `curl http://localhost:8081/status`
       returns 200 with correct JSON — shown with actual output
 
 ---
 
 ## DS-007 — CI pipeline (GitHub Actions)
 
-**Status:** OPEN
+**Status:** ACCEPTED
 **Depends on:** DS-006
 
 **Description:**
@@ -259,7 +259,7 @@ pass.
 
 ## DS-008 — README finalization + pre-publish audit
 
-**Status:** OPEN
+**Status:** ACCEPTED
 **Depends on:** DS-007
 
 **Description:**
@@ -331,14 +331,14 @@ and can be polled by any external alerting system in the meantime.
 
 | Ticket | Title | Status |
 |---|---|---|
-| DS-001 | Repo scaffolding | OPEN |
-| DS-002 | severity.py | OPEN |
-| DS-003 | docker_checker.py | OPEN |
-| DS-004 | db.py + check.py | OPEN |
-| DS-005 | systemd timer | OPEN |
-| DS-006 | dashboard | OPEN |
-| DS-007 | CI pipeline | OPEN |
-| DS-008 | README + audit | OPEN |
+| DS-001 | Repo scaffolding | ACCEPTED |
+| DS-002 | severity.py | ACCEPTED |
+| DS-003 | docker_checker.py | ACCEPTED |
+| DS-004 | db.py + check.py | ACCEPTED |
+| DS-005 | systemd timer | ACCEPTED |
+| DS-006 | dashboard | ACCEPTED |
+| DS-007 | CI pipeline | ACCEPTED |
+| DS-008 | README + audit | ACCEPTED |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |
