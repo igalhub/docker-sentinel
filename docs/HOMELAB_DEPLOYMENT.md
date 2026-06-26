@@ -58,8 +58,8 @@ curl http://localhost:8081/status
 
 ## Access from your main machine
 
-http://<VM_IP>:8081
-http://<VM_IP>:8081/status
+`http://<VM_IP>:8081`
+`http://<VM_IP>:8081/status`
 Replace `<VM_IP>` with your VM's static IP address.
 
 ## What docker-sentinel monitors in a home lab
