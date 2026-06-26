@@ -288,6 +288,30 @@ the pre-publish security audit — which belongs to the user alone.
 
 ---
 
+## DS-009 — Home lab deployment documentation
+
+**Goal:** Document deployment on a Proxmox home lab environment and
+multi-project coexistence.
+
+**Deliverables:**
+- `docs/HOMELAB_DEPLOYMENT.md` — full deployment walkthrough for
+  Proxmox VE + Ubuntu Server VM environment
+- README platform support section updated with home lab notes
+- Documented: docker-sentinel auto-discovers all running containers
+  including other portfolio projects
+- Documented: port 8081 used to avoid conflict with expiry-watcher
+
+**Tested on:**
+- Proxmox VE 9.2.3, Beelink SER mini PC
+- Ubuntu Server 24.04.3 LTS VM
+- Docker 29.6.0, Python 3.12
+
+**Dependencies:** DS-008
+
+**Status: DONE**
+
+---
+
 ## DS-stretch-01 — Resource monitoring (CPU/memory trends)
 
 **Status:** DEFERRED
@@ -339,6 +363,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-006 | dashboard | DONE |
 | DS-007 | CI pipeline | DONE |
 | DS-008 | README + audit | DONE |
+| DS-009 | Home lab deployment documentation | DONE |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |

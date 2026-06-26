@@ -263,6 +263,13 @@ Linux (`~/.docker/run/docker.sock` vs `/var/run/docker.sock`). `docker-py`'s
 the Docker context, so it should work automatically — but this hasn't
 been tested on real Mac hardware.
 
+**Home lab (Proxmox VE + Ubuntu Server 24.04.3 VM):** Fully tested —
+all components work as-is, including the Docker socket path
+(`/var/run/docker.sock` — same as desktop Linux, no configuration
+needed). Note that `python3.12-venv` must be installed explicitly
+(`sudo apt install -y python3.12-venv`). See
+`docs/HOMELAB_DEPLOYMENT.md` for the full walkthrough.
+
 ---
 
 ## What's not in v1
