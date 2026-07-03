@@ -6,3 +6,6 @@ __pycache__/
 *.pyo
 .env
 config/settings.yaml
+
+# Claude Code session handoff — machine-local, never committed
+HANDOFF.md
