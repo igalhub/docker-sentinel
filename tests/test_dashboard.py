@@ -1,9 +1,11 @@
+import importlib
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
 
+import dashboard.main as dashboard_main
 from dashboard.main import app
 
 client = TestClient(app)
@@ -150,3 +152,66 @@ class TestReadOnlyGuarantee:
         with patch("checker.db.write_results", side_effect=_must_not_be_called):
             resp = client.get("/")
             assert resp.status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
+
+class TestAuth:
+    def test_no_auth_required_by_default(self, mock_db):
+        # DASHBOARD_USER/PASSWORD unset in the test environment — no credentials needed.
+        assert client.get("/status").status_code == 200
+
+    def test_correct_credentials_accepted(self, mock_db, monkeypatch):
+        monkeypatch.setattr(dashboard_main, "DASHBOARD_USER", "admin")
+        monkeypatch.setattr(dashboard_main, "DASHBOARD_PASSWORD", "secret")
+        resp = client.get("/status", auth=("admin", "secret"))
+        assert resp.status_code == 200
+
+    def test_wrong_password_rejected(self, mock_db, monkeypatch):
+        monkeypatch.setattr(dashboard_main, "DASHBOARD_USER", "admin")
+        monkeypatch.setattr(dashboard_main, "DASHBOARD_PASSWORD", "secret")
+        resp = client.get("/status", auth=("admin", "wrong"))
+        assert resp.status_code == 401
+
+    def test_missing_credentials_rejected(self, mock_db, monkeypatch):
+        monkeypatch.setattr(dashboard_main, "DASHBOARD_USER", "admin")
+        monkeypatch.setattr(dashboard_main, "DASHBOARD_PASSWORD", "secret")
+        resp = client.get("/status")
+        assert resp.status_code == 401
+
+    def test_root_endpoint_also_protected(self, mock_db, monkeypatch):
+        monkeypatch.setattr(dashboard_main, "DASHBOARD_USER", "admin")
+        monkeypatch.setattr(dashboard_main, "DASHBOARD_PASSWORD", "secret")
+        assert client.get("/").status_code == 401
+        assert client.get("/", auth=("admin", "secret")).status_code == 200
+
+    def test_mismatched_env_vars_refuse_to_start(self, monkeypatch):
+        monkeypatch.setenv("SENTINEL_DASHBOARD_USER", "admin")
+        monkeypatch.delenv("SENTINEL_DASHBOARD_PASSWORD", raising=False)
+        try:
+            with pytest.raises(RuntimeError):
+                importlib.reload(dashboard_main)
+        finally:
+            # Restore a clean, auth-disabled module state for subsequent tests —
+            # reload() mutates the shared module object in place even on failure.
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+
+# ---------------------------------------------------------------------------
+# Security headers
+# ---------------------------------------------------------------------------
+
+class TestSecurityHeaders:
+    def test_headers_present_on_root(self, mock_db):
+        resp = client.get("/")
+        assert resp.headers["x-frame-options"] == "DENY"
+        assert resp.headers["x-content-type-options"] == "nosniff"
+        assert resp.headers["content-security-policy"] == "default-src 'self'"
+        assert resp.headers["referrer-policy"] == "no-referrer"
+
+    def test_headers_present_on_status(self, mock_db):
+        resp = client.get("/status")
+        assert resp.headers["x-frame-options"] == "DENY"

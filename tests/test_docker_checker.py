@@ -124,6 +124,13 @@ class TestRestartCheck:
         assert result["severity"] == "unknown"
         assert "error" in result
 
+    def test_error_logs_warning(self, caplog):
+        c = MagicMock()
+        c.attrs = {}
+        with caplog.at_level("WARNING"):
+            _restart_check(c, CONFIG)
+        assert any(r.levelname == "WARNING" for r in caplog.records)
+
     def test_detail_contains_counts(self):
         c = _mock_container(restart_count=2, started_at=OLD_TS)
         result = _restart_check(c, CONFIG)
@@ -171,6 +178,13 @@ class TestHealthcheckCheck:
         result = _healthcheck_check(c, CONFIG)
         assert result["severity"] == "unknown"
         assert "error" in result
+
+    def test_error_logs_warning(self, caplog):
+        c = MagicMock()
+        c.attrs = {}
+        with caplog.at_level("WARNING"):
+            _healthcheck_check(c, CONFIG)
+        assert any(r.levelname == "WARNING" for r in caplog.records)
 
 
 # ---------------------------------------------------------------------------
@@ -220,6 +234,13 @@ class TestPortCheck:
         assert result["severity"] == "unknown"
         assert "error" in result
 
+    def test_error_logs_warning(self, caplog):
+        c = MagicMock()
+        c.attrs = {}
+        with caplog.at_level("WARNING"):
+            _port_check(c, CONFIG)
+        assert any(r.levelname == "WARNING" for r in caplog.records)
+
 
 # ---------------------------------------------------------------------------
 # _log_activity_check
@@ -249,6 +270,13 @@ class TestLogActivityCheck:
         result = _log_activity_check(c, CONFIG)
         assert result["severity"] == "unknown"
         assert "error" in result
+
+    def test_error_logs_warning(self, caplog):
+        c = MagicMock()
+        c.logs.side_effect = docker.errors.APIError("daemon error")
+        with caplog.at_level("WARNING"):
+            _log_activity_check(c, CONFIG)
+        assert any(r.levelname == "WARNING" for r in caplog.records)
 
 
 # ---------------------------------------------------------------------------
