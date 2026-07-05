@@ -1,5 +1,12 @@
 # CHANGELOG — docker-sentinel
 
+## Unticketed maintenance
+
+- **CI: bump `actions/checkout` to v5 and `actions/setup-python` to v6** —
+  removes the Node.js 20 deprecation warning on GitHub-hosted runners;
+  both actions now ship Node-24-native runners instead of being
+  force-shimmed onto a newer Node version at runtime.
+
 ## DS-010 — Security hardening pass
 Optional HTTP Basic Auth for the dashboard (`SENTINEL_DASHBOARD_USER`/
 `SENTINEL_DASHBOARD_PASSWORD`), security response headers, warning logs
