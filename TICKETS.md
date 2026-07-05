@@ -312,6 +312,41 @@ multi-project coexistence.
 
 ---
 
+## DS-010 — Security hardening pass (dashboard auth, headers, logging, image pinning)
+
+**Status:** DONE
+**Depends on:** DS-006
+
+**Description:**
+Backfilled ticket for a security-focused code review pass (external
+review via Claude Desktop, implemented and merged via PR #2 without a
+ticket at the time). Addresses dashboard exposure, error visibility,
+and supply-chain reproducibility.
+
+**Acceptance criteria:**
+- [x] Dashboard supports optional HTTP Basic Auth via
+      `SENTINEL_DASHBOARD_USER`/`SENTINEL_DASHBOARD_PASSWORD`; refuses
+      to start if only one is set; logs a startup warning if both are
+      left unset
+- [x] Security headers (`X-Frame-Options`, `X-Content-Type-Options`,
+      `Content-Security-Policy`, `Referrer-Policy`) applied via
+      middleware to all dashboard responses
+- [x] README documents the auth env vars and recommends a reverse
+      proxy/VPN instead of direct exposure; warns that `docker`-group
+      membership is root-equivalent on the host
+- [x] `dashboard/Dockerfile` pins `python:3.12-slim` to a resolved
+      digest instead of a floating tag
+- [x] Every `except Exception` block in `checker/docker_checker.py`
+      logs a `logger.warning` before returning `severity="unknown"`
+- [x] Tests added: auth accepted/rejected/missing, mismatched env vars
+      refuse to start, security headers present, warning logged on each
+      check's error path
+- [x] `pytest -m "not docker" -v` passes with 0 failures (114 passed)
+
+**Merged:** PR #2, commit `3f7dbc8`
+
+---
+
 ## DS-stretch-01 — Resource monitoring (CPU/memory trends)
 
 **Status:** DEFERRED
@@ -364,6 +399,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-007 | CI pipeline | DONE |
 | DS-008 | README + audit | DONE |
 | DS-009 | Home lab deployment documentation | DONE |
+| DS-010 | Security hardening pass | DONE |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |

@@ -69,10 +69,10 @@ FastAPI dashboard (separate process)
 
 **Key files:**
 - `checker/severity.py` — pure functions, no I/O: `compute_severity(check_type, value)` and `aggregate_severity(severities)`. Thresholds passed as a config dict, never hardcoded.
-- `checker/docker_checker.py` — `check_container(container) -> dict` and `check_all(client, config) -> list[dict]`. All Docker access via docker-py; Docker errors set `severity="unknown"` on the affected check, never crash the run.
+- `checker/docker_checker.py` — `check_container(container) -> dict` and `check_all(client, config) -> list[dict]`. All Docker access via docker-py; Docker errors set `severity="unknown"` on the affected check, never crash the run, and log a `logger.warning` so a real bug (e.g. a Docker API field rename) doesn't hide as a silent "unknown" blip.
 - `checker/db.py` — `init_db`, `write_results`, `read_results`, `get_last_checked`. Per-check breakdown stored as JSON in a `checks` column. Tests use `:memory:`.
 - `checker/check.py` — entry point: connects via `docker.from_env()`, loads `config/settings.yaml`, runs `check_all`, writes to `results.db`.
-- `dashboard/main.py` — FastAPI app; no write path to `results.db` anywhere in `dashboard/`.
+- `dashboard/main.py` — FastAPI app; no write path to `results.db` anywhere in `dashboard/`. Optional HTTP Basic Auth via `SENTINEL_DASHBOARD_USER`/`SENTINEL_DASHBOARD_PASSWORD` (both or neither must be set); logs a startup warning if left unset. Security headers (`X-Frame-Options`, `X-Content-Type-Options`, CSP, `Referrer-Policy`) applied via middleware.
 - `config/settings.yaml` — gitignored runtime config (example at `config/settings.yaml.example`).
 
 **Test split:** Live Docker tests are marked `@pytest.mark.docker`. Offline tests use mocks or in-memory SQLite. CI runs only the offline suite.
