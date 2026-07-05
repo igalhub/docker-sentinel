@@ -24,25 +24,25 @@ Live test fixtures: real containers created via docker-py, cleaned up after each
 Establish the repository baseline. No application logic. No credentials.
 
 **Acceptance criteria:**
-- [ ] `.gitignore` excludes at minimum: `.idea/`, `.venv/`, `results.db`,
+- [x] `.gitignore` excludes at minimum: `.idea/`, `.venv/`, `results.db`,
       `__pycache__/`, `*.pyc`, `*.pyo`, `.env`, `config/settings.yaml`
-- [ ] `LICENSE` present, MIT, copyright Igal Vexler 2026
-- [ ] `README.md` present (full content from PRD package — not a placeholder)
-- [ ] Directory skeleton exists: `checker/`, `dashboard/`,
+- [x] `LICENSE` present, MIT, copyright Igal Vexler 2026
+- [x] `README.md` present (full content from PRD package — not a placeholder)
+- [x] Directory skeleton exists: `checker/`, `dashboard/`,
       `dashboard/templates/`, `config/`, `tests/`, `systemd/`, `scripts/`,
       `docs/`
-- [ ] `requirements.txt` lists runtime deps with pinned versions:
+- [x] `requirements.txt` lists runtime deps with pinned versions:
       `fastapi`, `uvicorn`, `docker`, `PyYAML`
-- [ ] `requirements-dev.txt` lists dev deps with pinned versions:
+- [x] `requirements-dev.txt` lists dev deps with pinned versions:
       `pytest`, `pytest-cov`, `httpx`
-- [ ] `config/settings.yaml.example` exists with all threshold defaults
+- [x] `config/settings.yaml.example` exists with all threshold defaults
       documented and obviously fake/default values only
-- [ ] `PRD.md`, `TICKETS.md`, `CLAUDE.md` all present in repo root
+- [x] `PRD.md`, `TICKETS.md`, `CLAUDE.md` all present in repo root
       (`PRD.md`/`TICKETS.md` later reorganized into `docs/`; `CLAUDE.md`
       and `README.md` remain at repo root)
-- [ ] `git status` after commit shows clean tree — no `.idea/`, `.venv/`,
+- [x] `git status` after commit shows clean tree — no `.idea/`, `.venv/`,
       `results.db` untracked
-- [ ] Verify with `git log --stat`
+- [x] Verify with `git log --stat`
 
 ---
 
@@ -57,16 +57,16 @@ one aggregates multiple check severities into a container-level severity.
 No I/O, no Docker calls, no external deps.
 
 **Acceptance criteria:**
-- [ ] `checker/severity.py` exports:
+- [x] `checker/severity.py` exports:
       - `compute_severity(check_type: str, value: float | str | None) -> str`
         — returns `"healthy"`, `"warning"`, `"critical"`, or `"unknown"`
         based on the check type and value, using configured thresholds
       - `aggregate_severity(severities: list[str]) -> str`
         — returns the worst severity from a list; order:
         `critical > warning > unknown > healthy`
-- [ ] Thresholds read from a passed-in config dict (not hardcoded) so
+- [x] Thresholds read from a passed-in config dict (not hardcoded) so
       tests can override them without touching files
-- [ ] Boundary tests cover every threshold transition for every check type:
+- [x] Boundary tests cover every threshold transition for every check type:
       - RestartCount: 3→warning, 10→critical, exact boundary values
       - Uptime seconds: 60→critical, 300→warning, exact boundaries
       - Healthcheck: "healthy"→healthy, "unhealthy"→critical,
@@ -74,10 +74,10 @@ No I/O, no Docker calls, no external deps.
       - Port ms: 2000→warning, refused/timeout→critical
       - Log silence hours: 2→warning, 6→critical
       - No healthcheck: warning regardless of value
-- [ ] `aggregate_severity(["healthy", "critical", "warning"])` → `"critical"`
-- [ ] `aggregate_severity([])` → `"unknown"`
-- [ ] `pytest tests/test_severity.py -v` passes with 0 failures
-- [ ] Mutation test performed: flip one boundary, confirm the relevant
+- [x] `aggregate_severity(["healthy", "critical", "warning"])` → `"critical"`
+- [x] `aggregate_severity([])` → `"unknown"`
+- [x] `pytest tests/test_severity.py -v` passes with 0 failures
+- [x] Mutation test performed: flip one boundary, confirm the relevant
       test fails, revert, confirm green again — evidence shown
 
 ---
@@ -92,32 +92,32 @@ The core checker module. Uses docker-py SDK to list running containers
 and run all four checks per container. No subprocess calls, no CLI.
 
 **Acceptance criteria:**
-- [ ] `checker/docker_checker.py` exports:
+- [x] `checker/docker_checker.py` exports:
       - `check_container(container) -> dict` — runs all four checks,
         returns a result dict per check plus an aggregate
       - `check_all(client: docker.DockerClient, config: dict) -> list[dict]`
         — lists all running containers, calls `check_container` on each
-- [ ] Per-container result dict contains:
+- [x] Per-container result dict contains:
       `container_id`, `name`, `image`, `status`, `checks` (dict of
       per-check results), `severity` (aggregate), `checked_at`
-- [ ] Each per-check result contains: `check_type`, `value`, `severity`,
+- [x] Each per-check result contains: `check_type`, `value`, `severity`,
       `detail` (human-readable explanation)
-- [ ] **restart_check:** reads `RestartCount` and `StartedAt` from
+- [x] **restart_check:** reads `RestartCount` and `StartedAt` from
       `container.attrs` — no CLI call
-- [ ] **healthcheck_check:** reads `Health.Status` and `Health.FailingStreak`
+- [x] **healthcheck_check:** reads `Health.Status` and `Health.FailingStreak`
       from `container.attrs["State"]` — gracefully handles containers
       with no HEALTHCHECK (returns warning with `detail="no healthcheck defined"`)
-- [ ] **port_check:** reads exposed ports from
+- [x] **port_check:** reads exposed ports from
       `container.attrs["NetworkSettings"]["Ports"]`, TCP-connects to each
       published port on `localhost`, times the connection, skips containers
       with no published ports (returns `"unknown"` with detail explaining why)
-- [ ] **log_activity_check:** calls `container.logs(since=N_hours_ago,
+- [x] **log_activity_check:** calls `container.logs(since=N_hours_ago,
       tail=1)` — any bytes returned → activity detected; empty → silence
       flag; uses `docker logs --since` equivalent, not full log retrieval
-- [ ] On `docker.errors.APIError` or any Docker exception, the affected
+- [x] On `docker.errors.APIError` or any Docker exception, the affected
       check returns `severity="unknown"` and `error` field populated —
       never crashes the whole checker run
-- [ ] **Live proof required (marked `@pytest.mark.docker`):**
+- [x] **Live proof required (marked `@pytest.mark.docker`):**
       - A healthy long-running container (e.g. `nginx:alpine`) → all
         checks healthy or unknown (no published ports → port check unknown)
       - A crash-looping container (exits immediately, restart policy
@@ -127,9 +127,9 @@ and run all four checks per container. No subprocess calls, no CLI.
       - A container whose exposed port is not actually listening →
         port_check returns `critical`
       - All fixtures created via docker-py, all cleaned up after the test
-- [ ] `pytest tests/test_docker_checker.py -v -m "not docker"` passes
+- [x] `pytest tests/test_docker_checker.py -v -m "not docker"` passes
       (offline/mocked tests)
-- [ ] `pytest tests/test_docker_checker.py -v -m docker` passes with a
+- [x] `pytest tests/test_docker_checker.py -v -m docker` passes with a
       running Docker daemon — Developer runs this and shows full output
 
 ---
@@ -145,25 +145,25 @@ Same db.py pattern as Expiry Watcher with schema adapted for
 per-container, per-check results.
 
 **Acceptance criteria:**
-- [ ] `checker/db.py` exports:
+- [x] `checker/db.py` exports:
       - `init_db(path: str)` — creates schema if it doesn't exist
       - `write_results(path: str, results: list[dict])` — upserts by
         container name; stores per-check breakdown as JSON in a `checks`
         column
       - `read_results(path: str) -> list[dict]`
       - `get_last_checked(path: str) -> datetime | None`
-- [ ] `checker/check.py` is runnable as `python -m checker.check`:
+- [x] `checker/check.py` is runnable as `python -m checker.check`:
       - connects to Docker via `docker.from_env()`
       - loads `config/settings.yaml`
       - runs `check_all()`
       - writes to `results.db` (path configurable via env var)
       - exits 0 on completion; Docker errors written to db, not raised
-- [ ] After a live run, `read_results()` returns one dict per running
+- [x] After a live run, `read_results()` returns one dict per running
       container — verified by actually running it and querying the db
-- [ ] `tests/test_db.py` uses in-memory SQLite (`:memory:`) — no I/O
+- [x] `tests/test_db.py` uses in-memory SQLite (`:memory:`) — no I/O
       side effects in tests
-- [ ] `pytest tests/test_db.py -v` passes with 0 failures
-- [ ] `results.db` does not appear in `git status` after a run
+- [x] `pytest tests/test_db.py -v` passes with 0 failures
+- [x] `results.db` does not appear in `git status` after a run
 
 ---
 
@@ -177,22 +177,22 @@ Install and verify the systemd units. 5-minute interval. This ticket is
 not done until the timer has actually fired and the service has run.
 
 **Acceptance criteria:**
-- [ ] `systemd/docker-sentinel.service` — Type=oneshot, correct
+- [x] `systemd/docker-sentinel.service` — Type=oneshot, correct
       WorkingDirectory and ExecStart using `.venv/bin/python -m checker.check`
-- [ ] `systemd/docker-sentinel.timer` — OnBootSec=2min, OnUnitActiveSec=5min,
+- [x] `systemd/docker-sentinel.timer` — OnBootSec=2min, OnUnitActiveSec=5min,
       Persistent=true, WantedBy=timers.target
-- [ ] `systemd/install.sh` — copies units to `~/.config/systemd/user/`,
+- [x] `systemd/install.sh` — copies units to `~/.config/systemd/user/`,
       daemon-reload, enable --now
-- [ ] All `vault` commands run via `docker exec` — no host CLI required
+- [x] All `vault` commands run via `docker exec` — no host CLI required
       (N/A for this project, but note: docker-py connects via socket,
       no host docker CLI install required either)
-- [ ] `systemctl --user status docker-sentinel.timer` shows
+- [x] `systemctl --user status docker-sentinel.timer` shows
       `active (waiting)` — shown with actual output
-- [ ] `systemctl --user start docker-sentinel.service` triggers a manual
+- [x] `systemctl --user start docker-sentinel.service` triggers a manual
       run that completes successfully and writes to `results.db` —
       verified with `journalctl --user -u docker-sentinel.service` output
-- [ ] `journalctl` output contains no credential strings
-- [ ] Unit files committed; `results.db` not committed
+- [x] `journalctl` output contains no credential strings
+- [x] Unit files committed; `results.db` not committed
 
 ---
 
@@ -207,31 +207,31 @@ design as Expiry Watcher. Adds per-check breakdown display — not just
 aggregate severity per container, but which specific check failed and why.
 
 **Acceptance criteria:**
-- [ ] `dashboard/main.py` is a runnable FastAPI app
-- [ ] `GET /status` returns JSON:
+- [x] `dashboard/main.py` is a runnable FastAPI app
+- [x] `GET /status` returns JSON:
       - `containers`: list of per-container dicts, each with `name`,
         `image`, `severity` (aggregate), `checks` (per-check breakdown),
         `checked_at`
       - `last_checked`: ISO-8601 timestamp
       - `stale`: bool (true if last_checked > 2× check interval ago)
-- [ ] `GET /` returns HTML:
+- [x] `GET /` returns HTML:
       - Summary cards (healthy / warning / critical counts)
       - Table with one row per container: name, image, aggregate severity
         badge, expandable per-check detail (or inline sub-rows)
       - "Last checked: X minutes ago" with stale banner if stale
       - Same color scheme and Tabler icons as Expiry Watcher dashboard
-- [ ] No code path in `dashboard/` ever writes to `results.db` —
+- [x] No code path in `dashboard/` ever writes to `results.db` —
       confirmed by monkeypatching `write_results` to raise and asserting
       no dashboard endpoint triggers it
-- [ ] Staleness detection: last_checked older than 2× check interval →
+- [x] Staleness detection: last_checked older than 2× check interval →
       `stale: true` in JSON and stale banner in HTML
-- [ ] `docker-compose.yml` mounts `results.db` as `:ro` — read-only
+- [x] `docker-compose.yml` mounts `results.db` as `:ro` — read-only
       enforced at container level, not just application code
-- [ ] Cross-process proof: run `python -m checker.check` on host, then
+- [x] Cross-process proof: run `python -m checker.check` on host, then
       start dashboard container, confirm `GET /status` `last_checked`
       timestamp matches the host checker run exactly
-- [ ] `pytest tests/test_dashboard.py -v` passes 0 failures
-- [ ] `docker compose up dashboard -d` → `curl http://localhost:8081/status`
+- [x] `pytest tests/test_dashboard.py -v` passes 0 failures
+- [x] `docker compose up dashboard -d` → `curl http://localhost:8081/status`
       returns 200 with correct JSON — shown with actual output
 
 ---
@@ -247,14 +247,14 @@ socket on standard runners without special setup). Everything else must
 pass.
 
 **Acceptance criteria:**
-- [ ] `.github/workflows/ci.yml` runs on push and PR to `master`
-- [ ] CI steps: checkout → Python 3.12 → install deps → pytest
+- [x] `.github/workflows/ci.yml` runs on push and PR to `master`
+- [x] CI steps: checkout → Python 3.12 → install deps → pytest
       `-m "not docker" -v`
-- [ ] CI passes on a clean push — verified by reading the actual Actions
+- [x] CI passes on a clean push — verified by reading the actual Actions
       run log, not just "it went green"
-- [ ] No credentials appear in the workflow file or CI logs
-- [ ] CI badge added to README.md
-- [ ] Proactively check for runner-specific issues before pushing
+- [x] No credentials appear in the workflow file or CI logs
+- [x] CI badge added to README.md
+- [x] Proactively check for runner-specific issues before pushing
       (lesson from Vault Secrets Demo's bind-mount CI failure)
 
 ---
@@ -270,23 +270,23 @@ PRD package). This ticket is a verification and finalization pass, plus
 the pre-publish security audit — which belongs to the user alone.
 
 **Acceptance criteria (Developer):**
-- [ ] README accurately reflects the final implementation — no
+- [x] README accurately reflects the final implementation — no
       placeholder text, no TODO lines, no steps that don't work as written
-- [ ] Fresh-clone smoke test performed: clone into a fresh directory,
+- [x] Fresh-clone smoke test performed: clone into a fresh directory,
       follow the README exactly, confirm each step works — directory left
       intact for user to verify (lesson from Expiry Watcher)
-- [ ] Platform support table matches actual test results from CI and
+- [x] Platform support table matches actual test results from CI and
       any manual macOS/Windows testing done
 
 **Acceptance criteria (User — not delegatable):**
-- [ ] `git log --all --full-history -- '*.yaml' '*.env' '*.json'`
+- [x] `git log --all --full-history -- '*.yaml' '*.env' '*.json'`
       — confirm no credential file was ever committed
-- [ ] `git log -p | grep -iE 'password|secret|token'`
+- [x] `git log -p | grep -iE 'password|secret|token'`
       — scan full patch history for accidental credential strings
-- [ ] Clean-clone smoke test from a fresh directory: clone, follow
+- [x] Clean-clone smoke test from a fresh directory: clone, follow
       README, confirm checker runs and dashboard serves
-- [ ] Confirm `results.db` is not present in the published repo
-- [ ] Confirm CI badge is green on master
+- [x] Confirm `results.db` is not present in the published repo
+- [x] Confirm CI badge is green on master
 
 ---
 
