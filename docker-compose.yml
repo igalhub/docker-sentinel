@@ -13,3 +13,7 @@ services:
     environment:
       - SENTINEL_DB_PATH=/app/results.db
       - SENTINEL_CONFIG_PATH=/app/config/settings.yaml
+      # Uncomment to require Basic Auth on the dashboard (recommended — see README).
+      # Without these set, the dashboard serves with NO authentication.
+      # - SENTINEL_DASHBOARD_USER=admin
+      # - SENTINEL_DASHBOARD_PASSWORD=change-me

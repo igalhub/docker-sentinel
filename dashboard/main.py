@@ -1,19 +1,66 @@
+import logging
 import os
+import secrets
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Annotated
 
 import yaml
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import status as http_status
 from fastapi.responses import HTMLResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
 from checker.db import get_last_checked, read_results
 
+logger = logging.getLogger(__name__)
+
 DB_PATH = os.environ.get("SENTINEL_DB_PATH", "results.db")
 CONFIG_PATH = os.environ.get("SENTINEL_CONFIG_PATH", "config/settings.yaml")
+DASHBOARD_USER = os.environ.get("SENTINEL_DASHBOARD_USER")
+DASHBOARD_PASSWORD = os.environ.get("SENTINEL_DASHBOARD_PASSWORD")
+
+if bool(DASHBOARD_USER) != bool(DASHBOARD_PASSWORD):
+    raise RuntimeError(
+        "SENTINEL_DASHBOARD_USER and SENTINEL_DASHBOARD_PASSWORD must both be set, or both left unset"
+    )
+
+if not DASHBOARD_USER:
+    logger.warning(
+        "SENTINEL_DASHBOARD_USER/SENTINEL_DASHBOARD_PASSWORD not set — "
+        "dashboard is running WITHOUT authentication. Do not expose this port "
+        "directly to the internet; put it behind a reverse proxy or VPN."
+    )
 
 app = FastAPI()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+security = HTTPBasic(auto_error=False)
+
+
+def require_auth(credentials: Annotated[HTTPBasicCredentials | None, Depends(security)] = None) -> None:
+    if not DASHBOARD_USER:
+        return
+
+    if credentials is None or not (
+        secrets.compare_digest(credentials.username, DASHBOARD_USER)
+        and secrets.compare_digest(credentials.password, DASHBOARD_PASSWORD)
+    ):
+        raise HTTPException(
+            status_code=http_status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    return response
 
 
 def _load_config() -> dict:
@@ -34,7 +81,7 @@ def _is_stale(last_checked: datetime | None, config: dict) -> bool:
 
 
 @app.get("/status")
-def status():
+def status(_auth: None = Depends(require_auth)):
     config = _load_config()
     containers = read_results(DB_PATH)
     last_checked = get_last_checked(DB_PATH)
@@ -46,7 +93,7 @@ def status():
 
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request):
+def index(request: Request, _auth: None = Depends(require_auth)):
     config = _load_config()
     containers = read_results(DB_PATH)
     last_checked = get_last_checked(DB_PATH)

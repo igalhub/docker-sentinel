@@ -1,3 +1,4 @@
+import logging
 import socket
 import time
 from datetime import datetime, timezone
@@ -7,6 +8,8 @@ import docker
 import docker.errors
 
 from checker.severity import aggregate_severity, compute_severity
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_docker_time(ts: str) -> datetime:
@@ -38,6 +41,7 @@ def _restart_check(container: Any, config: dict) -> dict:
             "detail": f"restarts={restart_count}, uptime={uptime_s:.0f}s",
         }
     except Exception as exc:
+        logger.warning("restart check failed for %s: %s", getattr(container, "name", "?"), exc)
         return {
             "check_type": "restart",
             "value": None,
@@ -98,6 +102,7 @@ def _healthcheck_check(container: Any, config: dict) -> dict:
         }
 
     except Exception as exc:
+        logger.warning("healthcheck check failed for %s: %s", getattr(container, "name", "?"), exc)
         return {
             "check_type": "healthcheck",
             "value": None,
@@ -169,6 +174,7 @@ def _port_check(container: Any, config: dict) -> dict:
         }
 
     except Exception as exc:
+        logger.warning("port check failed for %s: %s", getattr(container, "name", "?"), exc)
         return {
             "check_type": "port",
             "value": None,
@@ -208,6 +214,7 @@ def _log_activity_check(container: Any, config: dict) -> dict:
         }
 
     except Exception as exc:
+        logger.warning("log_silence check failed for %s: %s", getattr(container, "name", "?"), exc)
         return {
             "check_type": "log_silence",
             "value": None,

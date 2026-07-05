@@ -168,6 +168,12 @@ inspect/logs calls return typed Python objects, not strings to parse.
 **Prerequisites:** Python 3.12, Docker running locally, user in the
 `docker` group (or root).
 
+> **Warning:** Membership in the `docker` group is equivalent to root
+> access on the host — it grants unrestricted access to the Docker
+> socket, which can be used to mount the host filesystem into a
+> container and escalate from there. Don't grant it casually,
+> especially on a shared or internet-facing box.
+
 ```bash
 git clone git@github.com:igalhub/docker-sentinel.git
 cd docker-sentinel
@@ -224,6 +230,26 @@ Dashboard at **http://localhost:8081** (host port configured in `docker-compose.
 ```bash
 uvicorn dashboard.main:app --host 0.0.0.0 --port 8080
 ```
+
+### Authentication
+
+The dashboard has no built-in login by default — set
+`SENTINEL_DASHBOARD_USER` and `SENTINEL_DASHBOARD_PASSWORD` to enable
+HTTP Basic Auth on both `/` and `/status`:
+
+```bash
+export SENTINEL_DASHBOARD_USER=admin
+export SENTINEL_DASHBOARD_PASSWORD=change-me
+```
+
+(Or uncomment the equivalent lines in `docker-compose.yml`.) Both must
+be set together, or the dashboard refuses to start.
+
+> **Do not expose the dashboard port directly to the internet**, even
+> with Basic Auth enabled — credentials are base64-encoded, not
+> encrypted, unless the connection is behind TLS. Put it behind a
+> reverse proxy (Caddy, nginx, Traefik) with TLS, or restrict access to
+> a VPN/private network.
 
 ---
 
