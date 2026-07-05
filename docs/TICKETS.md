@@ -38,6 +38,8 @@ Establish the repository baseline. No application logic. No credentials.
 - [ ] `config/settings.yaml.example` exists with all threshold defaults
       documented and obviously fake/default values only
 - [ ] `PRD.md`, `TICKETS.md`, `CLAUDE.md` all present in repo root
+      (`PRD.md`/`TICKETS.md` later reorganized into `docs/`; `CLAUDE.md`
+      and `README.md` remain at repo root)
 - [ ] `git status` after commit shows clean tree — no `.idea/`, `.venv/`,
       `results.db` untracked
 - [ ] Verify with `git log --stat`
