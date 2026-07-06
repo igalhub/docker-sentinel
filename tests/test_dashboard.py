@@ -199,6 +199,36 @@ class TestAuth:
             monkeypatch.undo()
             importlib.reload(dashboard_main)
 
+    def test_docs_routes_disabled_when_auth_enabled(self, monkeypatch):
+        # docs_url/redoc_url/openapi_url are baked into the FastAPI app at
+        # construction time, based on DASHBOARD_USER read at import time —
+        # a plain attribute monkeypatch never re-triggers app construction,
+        # so this must reload the module like test_mismatched_env_vars_refuse_to_start.
+        monkeypatch.setenv("SENTINEL_DASHBOARD_USER", "admin")
+        monkeypatch.setenv("SENTINEL_DASHBOARD_PASSWORD", "secret")
+        try:
+            importlib.reload(dashboard_main)
+            reloaded_client = TestClient(dashboard_main.app)
+            assert reloaded_client.get("/docs").status_code == 404
+            assert reloaded_client.get("/redoc").status_code == 404
+            assert reloaded_client.get("/openapi.json").status_code == 404
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+    def test_docs_routes_enabled_when_auth_disabled(self, monkeypatch):
+        monkeypatch.delenv("SENTINEL_DASHBOARD_USER", raising=False)
+        monkeypatch.delenv("SENTINEL_DASHBOARD_PASSWORD", raising=False)
+        try:
+            importlib.reload(dashboard_main)
+            reloaded_client = TestClient(dashboard_main.app)
+            assert reloaded_client.get("/docs").status_code == 200
+            assert reloaded_client.get("/redoc").status_code == 200
+            assert reloaded_client.get("/openapi.json").status_code == 200
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
 
 # ---------------------------------------------------------------------------
 # Security headers
