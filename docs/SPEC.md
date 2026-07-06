@@ -165,7 +165,11 @@ Both routes are read-only against `results.db` — no import of
 raises `RuntimeError` at import time if only one is present). When set,
 `require_auth` (an `HTTPBasic` dependency, `auto_error=False`) gates
 both routes, comparing credentials with `secrets.compare_digest`
-(timing-safe). When unset, a `logger.warning` fires once at import time
+(timing-safe). When set, FastAPI's own auto-registered `/docs`,
+`/redoc`, and `/openapi.json` routes are also disabled at construction
+time (`docs_url`/`redoc_url`/`openapi_url=None`) — they're registered
+outside the app's route handlers, so `require_auth` can't gate them
+directly. When unset, a `logger.warning` fires once at import time
 and the dashboard serves unauthenticated — this is the default because
 the dashboard is meant to sit behind a reverse proxy/VPN, not be exposed
 directly (see README).

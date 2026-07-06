@@ -245,6 +245,11 @@ export SENTINEL_DASHBOARD_PASSWORD=change-me
 (Or uncomment the equivalent lines in `docker-compose.yml`.) Both must
 be set together, or the dashboard refuses to start.
 
+When auth is enabled, FastAPI's auto-generated `/docs`, `/redoc`, and
+`/openapi.json` routes are disabled outright (they're registered outside
+the app's own route handlers, so they can't be gated with the same
+per-route auth check). With auth disabled, those routes stay enabled.
+
 > **Do not expose the dashboard port directly to the internet**, even
 > with Basic Auth enabled — credentials are base64-encoded, not
 > encrypted, unless the connection is behind TLS. Put it behind a

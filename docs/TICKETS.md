@@ -349,6 +349,31 @@ and supply-chain reproducibility.
 
 ---
 
+## DS-011 — Fix FastAPI docs/redoc/openapi auth bypass
+
+**Status:** DONE
+**Depends on:** DS-010
+
+**Description:**
+QA's live-server security pass (2026-07-06) found that FastAPI's
+auto-registered `/docs`, `/redoc`, `/openapi.json` routes bypass
+`require_auth` because they're wired up in the `FastAPI()` constructor,
+before any route-level dependency exists — they returned 200
+unauthenticated even with Basic Auth configured. Fixed by disabling
+those routes outright when `SENTINEL_DASHBOARD_USER` is set.
+
+**Acceptance criteria:**
+- [x] `/docs`, `/redoc`, `/openapi.json` return 404 when
+      `SENTINEL_DASHBOARD_USER`/`PASSWORD` are set
+- [x] Same routes return 200 when auth is disabled (no regression)
+- [x] Regression test added, mutation-tested (reverting the fix flips
+      the test from pass to fail)
+- [x] `pytest -m "not docker" -v` passes with 0 failures (116 passed)
+
+**Merged:** PR #7, commit `c7390d1`
+
+---
+
 ## DS-stretch-01 — Resource monitoring (CPU/memory trends)
 
 **Status:** DEFERRED
@@ -402,6 +427,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-008 | README + audit | DONE |
 | DS-009 | Home lab deployment documentation | DONE |
 | DS-010 | Security hardening pass | DONE |
+| DS-011 | Fix FastAPI docs/redoc/openapi auth bypass | DONE |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |
