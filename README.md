@@ -256,6 +256,12 @@ per-route auth check). With auth disabled, those routes stay enabled.
 > reverse proxy (Caddy, nginx, Traefik) with TLS, or restrict access to
 > a VPN/private network.
 
+The dashboard itself does not rate-limit or lock out failed Basic Auth
+attempts — that's the reverse proxy's job too. Configure rate limiting
+there (e.g. Caddy's `rate_limit`, nginx's `limit_req`, or Traefik's
+`RateLimit` middleware) if the dashboard is reachable by anyone other
+than you.
+
 ---
 
 ## Running tests
