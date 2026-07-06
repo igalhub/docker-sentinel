@@ -1,5 +1,13 @@
 # CHANGELOG — docker-sentinel
 
+## DS-011 — Fix FastAPI docs/redoc/openapi auth bypass
+FastAPI's auto-registered `/docs`, `/redoc`, and `/openapi.json` routes
+were wired up in the `FastAPI()` constructor itself, before any
+route-level `Depends(require_auth)` existed, so they returned 200
+unauthenticated even with Basic Auth configured. Now disabled outright
+when `SENTINEL_DASHBOARD_USER` is set. Found via a live-server QA
+security pass; regression test mutation-tested.
+
 ## Unticketed maintenance
 
 - **CI: bump `actions/checkout` to v5 and `actions/setup-python` to v6** —
