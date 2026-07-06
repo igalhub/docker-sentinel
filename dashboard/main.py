@@ -33,7 +33,11 @@ if not DASHBOARD_USER:
         "directly to the internet; put it behind a reverse proxy or VPN."
     )
 
-app = FastAPI()
+app = FastAPI(
+    docs_url="/docs" if not DASHBOARD_USER else None,
+    redoc_url="/redoc" if not DASHBOARD_USER else None,
+    openapi_url="/openapi.json" if not DASHBOARD_USER else None,
+)
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 security = HTTPBasic(auto_error=False)
 
