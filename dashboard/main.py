@@ -69,12 +69,28 @@ async def security_headers(request: Request, call_next):
     return response
 
 
+_DEFAULT_CONFIG = {"checker": {"interval_seconds": 300}, "dashboard": {"stale_multiplier": 2}}
+
+
 def _load_config() -> dict:
     try:
         with open(CONFIG_PATH) as f:
-            return yaml.safe_load(f)
+            config = yaml.safe_load(f)
     except FileNotFoundError:
-        return {"checker": {"interval_seconds": 300}, "dashboard": {"stale_multiplier": 2}}
+        return _DEFAULT_CONFIG
+    except yaml.YAMLError:
+        logger.warning(
+            "%s is malformed YAML — falling back to default config", CONFIG_PATH
+        )
+        return _DEFAULT_CONFIG
+
+    if config is None:
+        logger.warning(
+            "%s is empty or contains no YAML content — falling back to default config",
+            CONFIG_PATH,
+        )
+        return _DEFAULT_CONFIG
+    return config
 
 
 def _is_stale(last_checked: datetime | None, config: dict) -> bool:

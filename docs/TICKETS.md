@@ -374,6 +374,38 @@ those routes outright when `SENTINEL_DASHBOARD_USER` is set.
 
 ---
 
+## DS-012 — Validate config/settings.yaml shape at load time
+
+**Status:** DEFERRED
+**Depends on:** none
+
+**Description:**
+`dashboard/main.py`'s `_load_config()` currently special-cases individual
+malformed-config shapes one at a time (`FileNotFoundError`, `yaml.YAMLError`,
+`None` from an empty file) — found during a code review pass and fixed
+piecemeal. A top-level YAML scalar or list (e.g. a config file containing
+just `disabled` with no mapping structure) is valid YAML, parses without
+raising, and isn't `None`, so it still crashes `_is_stale()` with a
+`TypeError` the same way the already-fixed cases did. Continuing to patch
+`_load_config` case by case doesn't converge — the right fix is validating
+the full expected shape once at load time (required top-level keys, or a
+lightweight Pydantic model for `config/settings.yaml`), not another
+isinstance check.
+
+**Acceptance criteria:**
+- [ ] `_load_config()` validates the loaded config against the expected
+      shape (required keys: `checker.interval_seconds`,
+      `dashboard.stale_multiplier`) once, rather than checking for
+      individual malformed shapes ad hoc
+- [ ] Any invalid shape (wrong type, missing required key) falls back to
+      `_DEFAULT_CONFIG` with a single logged warning, same as the existing
+      `FileNotFoundError`/`YAMLError`/`None` cases
+- [ ] Tests cover: non-dict top-level YAML (scalar, list), missing required
+      keys, wrong value types
+- [ ] `pytest -m "not docker" -v` passes with 0 failures
+
+---
+
 ## DS-stretch-01 — Resource monitoring (CPU/memory trends)
 
 **Status:** DEFERRED
@@ -428,6 +460,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-009 | Home lab deployment documentation | DONE |
 | DS-010 | Security hardening pass | DONE |
 | DS-011 | Fix FastAPI docs/redoc/openapi auth bypass | DONE |
+| DS-012 | Validate config/settings.yaml shape at load time | DEFERRED |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |
