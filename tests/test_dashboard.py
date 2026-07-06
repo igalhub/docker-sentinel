@@ -234,6 +234,51 @@ class TestAuth:
 # Security headers
 # ---------------------------------------------------------------------------
 
+class TestConfigLoading:
+    def test_malformed_yaml_falls_back_to_defaults(self, tmp_path, monkeypatch, caplog):
+        bad_config = tmp_path / "settings.yaml"
+        bad_config.write_text("checker: [unterminated flow mapping {\n")
+        monkeypatch.setenv("SENTINEL_CONFIG_PATH", str(bad_config))
+        try:
+            importlib.reload(dashboard_main)
+            config = dashboard_main._load_config()
+            assert config == dashboard_main._DEFAULT_CONFIG
+            assert "malformed" in caplog.text.lower()
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+    def test_empty_yaml_falls_back_to_defaults(self, tmp_path, monkeypatch, caplog):
+        empty_config = tmp_path / "settings.yaml"
+        empty_config.write_text("# just a comment, no content\n")
+        monkeypatch.setenv("SENTINEL_CONFIG_PATH", str(empty_config))
+        try:
+            importlib.reload(dashboard_main)
+            config = dashboard_main._load_config()
+            assert config == dashboard_main._DEFAULT_CONFIG
+            assert "empty" in caplog.text.lower()
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+    def test_malformed_yaml_does_not_500_the_dashboard(self, tmp_path, monkeypatch):
+        bad_config = tmp_path / "settings.yaml"
+        bad_config.write_text("checker: [unterminated flow mapping {\n")
+        monkeypatch.setenv("SENTINEL_CONFIG_PATH", str(bad_config))
+        try:
+            importlib.reload(dashboard_main)
+            # Patched post-reload — reload() re-imports read_results/get_last_checked
+            # from checker.db, which would silently undo a pre-reload mock.patch.
+            monkeypatch.setattr(dashboard_main, "read_results", lambda path: [])
+            monkeypatch.setattr(dashboard_main, "get_last_checked", lambda path: None)
+            reloaded_client = TestClient(dashboard_main.app)
+            assert reloaded_client.get("/status").status_code == 200
+            assert reloaded_client.get("/").status_code == 200
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+
 class TestSecurityHeaders:
     def test_headers_present_on_root(self, mock_db):
         resp = client.get("/")
