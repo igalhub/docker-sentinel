@@ -124,6 +124,18 @@ IDs that no longer exist.
 the moment its last connection closes — file-per-call semantics don't
 work there, so tests share one cached connection per `:memory:` path
 and call `_close_cached` in teardown to reset state between tests.
+`:memory:` is test-only: `sqlite3.connect()` defaults to
+`check_same_thread=True`, and Starlette runs sync route handlers in a
+threadpool, so a live dashboard pointed at `SENTINEL_DB_PATH=:memory:`
+would raise `sqlite3.ProgrammingError` on cross-thread access.
+
+All four public functions (`init_db`, `write_results`, `read_results`,
+`get_last_checked`) open their connection via a `_connect()` context
+manager, which closes file-based connections after each call — the
+checker is a short-lived process so this didn't matter there, but the
+dashboard calls `read_results`/`get_last_checked` on every request, so
+an unclosed connection per call would leak a file descriptor under
+sustained traffic.
 
 `get_last_checked` returns `MAX(checked_at)` across all rows, parsed
 back to a `datetime`, or `None` if the table is empty.
