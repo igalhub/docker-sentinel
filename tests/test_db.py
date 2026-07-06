@@ -1,3 +1,5 @@
+import sqlite3
+
 import pytest
 
 import checker.db as db
@@ -29,6 +31,25 @@ def fresh_db():
     init_db(DB)
     yield
     db._close_cached(DB)
+
+
+class TestConnectionLifecycle:
+    def test_file_based_connection_closes_after_each_call(self, tmp_path):
+        path = str(tmp_path / "results.db")
+        init_db(path)
+        write_results(path, [SAMPLE])
+
+        with db._connect(path) as conn:
+            leaked_conn = conn
+        with pytest.raises(sqlite3.ProgrammingError):
+            leaked_conn.execute("SELECT 1")
+
+    def test_memory_connection_stays_open_across_calls(self):
+        init_db(DB)
+        write_results(DB, [SAMPLE])
+        # A second call must see the first call's data — proving the
+        # cached :memory: connection was not closed in between.
+        assert len(read_results(DB)) == 1
 
 
 class TestInitDb:
