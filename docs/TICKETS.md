@@ -406,6 +406,41 @@ isinstance check.
 
 ---
 
+## DS-013 — Add lint + coverage gate to CI
+
+**Status:** DEFERRED
+**Depends on:** none
+
+**Description:**
+`.github/workflows/ci.yml` runs the offline test suite only — no lint
+step, no coverage gate. Flagged as optional/low-priority in the same
+full code review pass that produced DS-011/DS-012.
+
+Scope is open-ended until someone actually runs `ruff check .` and
+`pytest --cov=checker --cov=dashboard` once to see current state — how
+many lint violations exist today (and whether they're real issues or
+noise from generated/vendored code like `dashboard/static/vendor/`)
+and what today's actual coverage percentage is. Don't guess at a lint
+ruleset or a coverage threshold before that discovery step; picking
+either upfront risks a threshold that's either trivially passing
+(useless) or immediately failing on unrelated pre-existing gaps
+(blocks unrelated PRs).
+
+**Acceptance criteria:**
+- [ ] Discovery: run `ruff check .` and `pytest --cov=checker
+      --cov=dashboard` locally once; record current violation count
+      and coverage percentage
+- [ ] Based on discovery, decide: fix existing lint violations before
+      adding the CI gate, or configure `ruff` to ignore/exclude what's
+      pre-existing (e.g. vendored assets) and gate only new violations
+- [ ] Add a `ruff check .` step to `.github/workflows/ci.yml`
+- [ ] Add a `pytest --cov=checker --cov=dashboard
+      --cov-fail-under=<threshold>` step, with `<threshold>` set from
+      the discovery step's actual measured coverage (not guessed)
+- [ ] CI passes green with both new steps
+
+---
+
 ## DS-stretch-01 — Resource monitoring (CPU/memory trends)
 
 **Status:** DEFERRED
@@ -461,6 +496,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-010 | Security hardening pass | DONE |
 | DS-011 | Fix FastAPI docs/redoc/openapi auth bypass | DONE |
 | DS-012 | Validate config/settings.yaml shape at load time | DEFERRED |
+| DS-013 | Add lint + coverage gate to CI | DEFERRED |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |
