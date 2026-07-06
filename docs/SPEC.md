@@ -176,8 +176,13 @@ directly (see README).
 
 **Security headers:** a `@app.middleware("http")` sets
 `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
-`Content-Security-Policy: default-src 'self'`, `Referrer-Policy:
-no-referrer` on every response.
+`Content-Security-Policy: default-src 'self'; img-src 'self' data:`,
+`Referrer-Policy: no-referrer` on every response. All frontend assets
+(Tabler CSS/JS/icon font, theme CSS, theme-toggle JS) are vendored
+under `dashboard/static/` and served same-origin via a `StaticFiles`
+mount — no CDN dependency, no `'unsafe-inline'` needed. The `img-src
+data:` allowance covers inline SVG data-URI backgrounds in the
+vendored Tabler CSS (form-control icons, checkboxes) — not user input.
 
 ## Config schema (`config/settings.yaml`)
 

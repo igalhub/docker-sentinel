@@ -4,116 +4,9 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>docker-sentinel</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
-  <style>
-    /* ── Theme variables ─────────────────────────────────────────── */
-    #root.dark {
-      --page-bg:     #1a1a1a;
-      --card-bg:     #2a2a2a;
-      --th-bg:       #222222;
-      --hover-bg:    #222222;
-      --border:      #3a3a3a;
-      --text:        #d4d4d4;
-      --muted:       #888888;
-      --detail-bg:   #222222;
-      --badge-cr-bg: #501313; --badge-cr-fg: #F7C1C1;
-      --badge-wa-bg: #412402; --badge-wa-fg: #FAC775;
-      --badge-ok-bg: #04342C; --badge-ok-fg: #9FE1CB;
-      --badge-un-bg: #2C2C2A; --badge-un-fg: #B4B2A9;
-      --cnt-ok: #9FE1CB; --cnt-wa: #FAC775;
-      --cnt-cr: #F7C1C1; --cnt-un: #B4B2A9;
-    }
-    #root.light {
-      --page-bg:     #f8f9fa;
-      --card-bg:     #ffffff;
-      --th-bg:       #f8f9fa;
-      --hover-bg:    #fafafa;
-      --border:      #e5e5e5;
-      --text:        #333333;
-      --muted:       #666666;
-      --detail-bg:   #f8f9fa;
-      --badge-cr-bg: #FCEBEB; --badge-cr-fg: #A32D2D;
-      --badge-wa-bg: #FAEEDA; --badge-wa-fg: #854F0B;
-      --badge-ok-bg: #E1F5EE; --badge-ok-fg: #0F6E56;
-      --badge-un-bg: #F1EFE8; --badge-un-fg: #5F5E5A;
-      --cnt-ok: #5DCAA5; --cnt-wa: #EF9F27;
-      --cnt-cr: #F09595; --cnt-un: #888780;
-    }
-
-    /* ── Base ────────────────────────────────────────────────────── */
-    #root {
-      background: var(--page-bg) !important;
-      min-height: 100vh;
-      color: var(--text);
-      transition: background-color 0.15s ease, color 0.15s ease;
-    }
-
-    /* ── Page header / body ──────────────────────────────────────── */
-    #root .page-header  { background: var(--page-bg); border-bottom: 1px solid var(--border); }
-    #root .page-body    { background: var(--page-bg); }
-    #root .page-title   { color: var(--text) !important; }
-
-    /* ── Cards ───────────────────────────────────────────────────── */
-    #root .card         { background: var(--card-bg) !important; border-color: var(--border) !important; color: var(--text); transition: background-color 0.15s ease; }
-    #root .card-header  { background: var(--card-bg) !important; border-color: var(--border) !important; }
-    #root .card-body    { background: var(--card-bg); }
-    #root .card-title   { color: var(--text); }
-    #root .subheader    { color: var(--muted); }
-
-    /* ── Table ───────────────────────────────────────────────────── */
-    #root .table                        { color: var(--text); }
-    #root .table thead th               { background: var(--th-bg) !important; border-color: var(--border); color: var(--muted); }
-    #root .table td                     { border-color: var(--border); }
-    #root .table tbody tr:hover > td    { background: var(--hover-bg); }
-
-    /* ── Expand-detail row ───────────────────────────────────────── */
-    #root tr.collapse > td,
-    #root tr.collapsing > td,
-    #root tr.collapse.show > td         { background: var(--detail-bg) !important; }
-
-    /* ── Text utilities ──────────────────────────────────────────── */
-    #root .text-muted   { color: var(--muted) !important; }
-    #root .fw-bold,
-    #root .fw-semibold  { color: var(--text); }
-
-    /* ── Expand toggle button ────────────────────────────────────── */
-    #root .btn-ghost-secondary          { color: var(--muted); }
-    #root .btn-ghost-secondary:hover    { background: var(--hover-bg); color: var(--text); }
-
-    /* ── Summary count colours ───────────────────────────────────── */
-    .cnt-ok { color: var(--cnt-ok); }
-    .cnt-wa { color: var(--cnt-wa); }
-    .cnt-cr { color: var(--cnt-cr); }
-    .cnt-un { color: var(--cnt-un); }
-
-    /* ── Severity badge classes — scoped per theme for max specificity ── */
-    #root.dark  .badge-cr { background: #501313 !important; color: #F7C1C1 !important; border-radius: 50rem; }
-    #root.dark  .badge-wa { background: #412402 !important; color: #FAC775 !important; border-radius: 50rem; }
-    #root.dark  .badge-ok { background: #04342C !important; color: #9FE1CB !important; border-radius: 50rem; }
-    #root.dark  .badge-un { background: #2C2C2A !important; color: #B4B2A9 !important; border-radius: 50rem; }
-    #root.light .badge-cr { background: #FCEBEB !important; color: #A32D2D !important; border-radius: 50rem; }
-    #root.light .badge-wa { background: #FAEEDA !important; color: #854F0B !important; border-radius: 50rem; }
-    #root.light .badge-ok { background: #E1F5EE !important; color: #0F6E56 !important; border-radius: 50rem; }
-    #root.light .badge-un { background: #F1EFE8 !important; color: #5F5E5A !important; border-radius: 50rem; }
-
-    /* ── Theme toggle button ─────────────────────────────────────── */
-    #theme-toggle {
-      background: transparent;
-      border: 1px solid var(--text);
-      color: var(--text);
-      border-radius: 6px;
-      padding: 6px 14px;
-      cursor: pointer;
-      font-size: 0.875rem;
-      line-height: 1.5;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.15s;
-    }
-    #theme-toggle:hover { background: var(--hover-bg); }
-  </style>
+  <link rel="stylesheet" href="/static/vendor/tabler/css/tabler.min.css">
+  <link rel="stylesheet" href="/static/vendor/tabler/icons/tabler-icons.min.css">
+  <link rel="stylesheet" href="/static/css/theme.css">
 </head>
 <body class="antialiased">
 <div id="root" class="page-wrapper dark">
@@ -238,7 +131,7 @@
                 <td colspan="5">
                   <div class="d-flex flex-wrap gap-2 p-3">
                     {% for check_name, check in c.checks.items() %}
-                    <div class="card card-sm shadow-none border" style="min-width:190px">
+                    <div class="card card-sm shadow-none border check-detail-card">
                       <div class="card-body py-2 px-3">
                         <div class="fw-semibold text-uppercase small mb-1">{{ check_name }}</div>
                         {% if check.severity == "critical" %}
@@ -266,30 +159,7 @@
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/js/tabler.min.js"></script>
-<script>
-  (function () {
-    var root   = document.getElementById('root');
-    var icon   = document.getElementById('toggle-icon');
-    var label  = document.getElementById('toggle-label');
-    var btn    = document.getElementById('theme-toggle');
-    var saved  = localStorage.getItem('ds-theme') || 'dark';
-
-    function apply(theme) {
-      root.classList.remove('dark', 'light');
-      root.classList.add(theme);
-      icon.className = theme === 'dark' ? 'ti ti-moon' : 'ti ti-sun';
-      label.textContent = theme === 'dark' ? 'Dark' : 'Light';
-    }
-
-    apply(saved);
-
-    btn.addEventListener('click', function () {
-      var next = root.classList.contains('dark') ? 'light' : 'dark';
-      localStorage.setItem('ds-theme', next);
-      apply(next);
-    });
-  })();
-</script>
+<script src="/static/vendor/tabler/js/tabler.min.js"></script>
+<script src="/static/js/theme-toggle.js"></script>
 </body>
 </html>

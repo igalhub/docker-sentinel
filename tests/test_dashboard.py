@@ -239,7 +239,7 @@ class TestSecurityHeaders:
         resp = client.get("/")
         assert resp.headers["x-frame-options"] == "DENY"
         assert resp.headers["x-content-type-options"] == "nosniff"
-        assert resp.headers["content-security-policy"] == "default-src 'self'"
+        assert resp.headers["content-security-policy"] == "default-src 'self'; img-src 'self' data:"
         assert resp.headers["referrer-policy"] == "no-referrer"
 
     def test_headers_present_on_status(self, mock_db):
