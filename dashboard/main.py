@@ -10,6 +10,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi import status as http_status
 from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from checker.db import get_last_checked, read_results
@@ -39,6 +40,7 @@ app = FastAPI(
     openapi_url="/openapi.json" if not DASHBOARD_USER else None,
 )
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 security = HTTPBasic(auto_error=False)
 
 
@@ -62,7 +64,7 @@ async def security_headers(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self' data:"
     response.headers["Referrer-Policy"] = "no-referrer"
     return response
 
