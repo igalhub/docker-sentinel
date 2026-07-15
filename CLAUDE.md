@@ -45,6 +45,12 @@ pytest tests/test_severity.py -v
 bash systemd/install.sh
 ```
 
+**Claude Code DB tooling:** `.claude/seed-reset.sh` seeds/resets a target
+SQLite file to a known-good baseline; `.claude/verify-data.sh` checks
+severity-value validity and freshness against it. Both require an explicit
+`SEED_RESET_DB_PATH`/`VERIFY_DATA_DB_PATH` and refuse to run against the
+live `results.db` — never point either at it.
+
 ---
 
 ## Architecture
