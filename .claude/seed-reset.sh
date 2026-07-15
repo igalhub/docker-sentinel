@@ -19,7 +19,7 @@ set -euo pipefail
 
 DB_PATH="${SEED_RESET_DB_PATH:?Set SEED_RESET_DB_PATH to the target SQLite file. Refuses to run without an explicit path.}"
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 if [[ "$(readlink -f "$DB_PATH" 2>/dev/null || echo "$DB_PATH")" == "$REPO_ROOT/results.db" ]]; then
   echo "seed-reset refuses to target the live production results.db ($REPO_ROOT/results.db)" >&2
   exit 1

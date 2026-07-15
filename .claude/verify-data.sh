@@ -13,11 +13,11 @@
 # YAML) so this check never silently drifts from what the live dashboard
 # actually uses. Override via VERIFY_DATA_CONFIG_PATH for testing.
 
-set -uo pipefail
+set -euo pipefail
 
 DB_PATH="${VERIFY_DATA_DB_PATH:?Set VERIFY_DATA_DB_PATH to the target SQLite file. Refuses to run without an explicit path.}"
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 if [[ "$(readlink -f "$DB_PATH" 2>/dev/null || echo "$DB_PATH")" == "$REPO_ROOT/results.db" ]]; then
   echo "verify-data refuses to target the live production results.db ($REPO_ROOT/results.db)" >&2
   exit 1
