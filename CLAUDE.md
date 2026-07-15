@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 cp config/settings.yaml.example config/settings.yaml
 ```
 
@@ -38,6 +38,12 @@ pytest -m docker -v
 
 # Single test file (replace with the file you want to run):
 pytest tests/test_severity.py -v
+```
+
+**Lint + coverage gate (what CI actually runs, in order):**
+```bash
+ruff check .
+pytest -m "not docker" -v --cov=checker --cov=dashboard --cov-fail-under=96
 ```
 
 **Install systemd timer (Linux only):**

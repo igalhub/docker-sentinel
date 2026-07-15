@@ -266,7 +266,9 @@ than you.
 
 ## Running tests
 
-**Offline suite (no Docker daemon required — what CI runs):**
+Install dev dependencies first: `pip install -r requirements-dev.txt`.
+
+**Offline suite (no Docker daemon required):**
 
 ```bash
 pytest -m "not docker" -v
@@ -283,6 +285,13 @@ Live tests create real containers as fixtures — a crash-looping container
 (exits immediately), a container with a failing HEALTHCHECK, and a
 container with a closed port — and confirm the detector fires correctly
 on each. Fixtures are cleaned up after each test.
+
+**What CI actually runs, in order:**
+
+```bash
+ruff check .
+pytest -m "not docker" -v --cov=checker --cov=dashboard --cov-fail-under=96
+```
 
 ---
 

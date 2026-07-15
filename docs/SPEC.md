@@ -222,4 +222,5 @@ Most other tests use mocks (`unittest.mock.MagicMock` for
 `docker.DockerClient`/container objects) or `:memory:` SQLite;
 `tests/test_dashboard_live_db.py` instead seeds a real tmp_path SQLite
 file to exercise the dashboard's read path end-to-end without mocks. CI
-runs only `pytest -m "not docker"`.
+runs `ruff check .`, then `pytest -m "not docker"` with a
+`--cov-fail-under=96` coverage gate (`.coveragerc` sets `precision = 2`).
