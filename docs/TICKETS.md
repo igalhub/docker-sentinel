@@ -408,7 +408,7 @@ isinstance check.
 
 ## DS-013 — Add lint + coverage gate to CI
 
-**Status:** DEFERRED
+**Status:** DONE
 **Depends on:** none
 
 **Description:**
@@ -426,18 +426,30 @@ either upfront risks a threshold that's either trivially passing
 (useless) or immediately failing on unrelated pre-existing gaps
 (blocks unrelated PRs).
 
+Discovery found exactly 1 lint violation (`conftest.py`'s unused `pytest`
+import, auto-fixed) and 87% coverage, with `checker/check.py` — the
+`python -m checker.check` entry point — at 0% (the sole reason the
+overall number was dragged down; every other file was already 94-100%).
+Decided to add a real thin test for `checker/check.py` (mocking
+`docker.from_env`/`check_all`/`init_db`/`write_results`, matching the
+mocking pattern already used elsewhere in this suite) rather than
+excluding it from the gate — it's a small, cleanly-mockable orchestration
+function, not a genuinely untestable script, and it's the actual
+production entry point the systemd timer runs every 5 minutes. Final
+measured coverage after that test: 96.39%.
+
 **Acceptance criteria:**
-- [ ] Discovery: run `ruff check .` and `pytest --cov=checker
+- [x] Discovery: run `ruff check .` and `pytest --cov=checker
       --cov=dashboard` locally once; record current violation count
       and coverage percentage
-- [ ] Based on discovery, decide: fix existing lint violations before
+- [x] Based on discovery, decide: fix existing lint violations before
       adding the CI gate, or configure `ruff` to ignore/exclude what's
       pre-existing (e.g. vendored assets) and gate only new violations
-- [ ] Add a `ruff check .` step to `.github/workflows/ci.yml`
-- [ ] Add a `pytest --cov=checker --cov=dashboard
+- [x] Add a `ruff check .` step to `.github/workflows/ci.yml`
+- [x] Add a `pytest --cov=checker --cov=dashboard
       --cov-fail-under=<threshold>` step, with `<threshold>` set from
       the discovery step's actual measured coverage (not guessed)
-- [ ] CI passes green with both new steps
+- [x] CI passes green with both new steps
 
 ---
 
@@ -591,7 +603,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-010 | Security hardening pass | DONE |
 | DS-011 | Fix FastAPI docs/redoc/openapi auth bypass | DONE |
 | DS-012 | Validate config/settings.yaml shape at load time | DEFERRED |
-| DS-013 | Add lint + coverage gate to CI | DEFERRED |
+| DS-013 | Add lint + coverage gate to CI | DONE |
 | DS-014 | Live-DB integration test for dashboard read path | DONE |
 | DS-015 | Commit results.db seed-reset.sh and verify-data.sh adapter scripts | DONE |
 | DS-stretch-01 | Resource monitoring | DEFERRED |

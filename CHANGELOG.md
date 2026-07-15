@@ -1,5 +1,14 @@
 # CHANGELOG — docker-sentinel
 
+## DS-013 — Add lint + coverage gate to CI
+`.github/workflows/ci.yml` now runs `ruff check .` and
+`pytest --cov=checker --cov=dashboard --cov-fail-under=96`. Discovery
+found 1 lint violation (unused import, fixed) and 87% coverage dragged
+down entirely by `checker/check.py` at 0%; added `tests/test_check.py`
+(mocking `docker.from_env`/`check_all`/`init_db`/`write_results`) to
+close that gap rather than excluding the entry point from the gate.
+Final measured coverage: 96.39%.
+
 ## DS-015 — Commit results.db seed-reset.sh and verify-data.sh adapter scripts
 `.claude/seed-reset.sh` and `.claude/verify-data.sh` seed/verify a target
 SQLite file via `checker.db`'s real `init_db`/`write_results`/

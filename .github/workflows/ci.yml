@@ -21,5 +21,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt -r requirements-dev.txt
 
-      - name: Run offline tests
-        run: pytest -m "not docker" -v
+      - name: Lint
+        run: ruff check .
+
+      - name: Run offline tests with coverage gate
+        run: pytest -m "not docker" -v --cov=checker --cov=dashboard --cov-fail-under=96
