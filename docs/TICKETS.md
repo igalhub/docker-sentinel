@@ -598,6 +598,66 @@ the record, not treated as blocking.
 
 ---
 
+## DS-017 — Close `_load_config` success-path gap; fix coverage.py rounding footgun
+
+**Status:** DONE
+**Depends on:** DS-016
+
+**Description:**
+Two real, previously-hidden bugs surfaced while verifying DS-016's hosted
+CI run, both invisible all session because local coverage measurements
+were taken from a contaminated dev environment (a real, gitignored
+`config/settings.yaml` sitting in the dev venv that a fresh CI checkout
+never has):
+
+1. **`dashboard/main.py` line 93 (`return config`, `_load_config`'s
+   success path) has never been covered by any test, in any CI run,
+   ever.** No test explicitly points `SENTINEL_CONFIG_PATH` at a valid
+   config file — every existing test either doesn't override it (falling
+   through to the nonexistent default path in a fresh checkout) or
+   deliberately points it at a malformed/empty file to test the fallback
+   paths. This predates DS-013 entirely; DS-016 didn't cause or miss it,
+   it was structurally impossible to see locally.
+2. **`coverage.py`'s `--cov-fail-under` compares against the *rounded*
+   percentage, not the raw one** (`coverage/results.py`:
+   `round(total, precision) < fail_under`, default `precision=0`).
+   DS-016's chosen threshold (97, matching the real fresh-environment
+   coverage of 96.72% which *rounds* to 97) silently passed
+   (`round(96.72, 0) == 97`, `97 < 97` is `False`) while `pytest-cov`'s
+   own message-printing logic separately printed
+   `FAIL Required test coverage of 97% not reached` using the raw value —
+   a real, reproducible false-pass, confirmed via a fresh clone/venv and
+   a 3-point threshold test matrix (98 correctly fails, 97 silently
+   passes, 96 correctly passes). The gate mechanism itself isn't broken
+   — a threshold with real margin, or fewer rounding-boundary
+   coincidences, fixes it.
+
+**Acceptance criteria:**
+- [x] New test added exercising `_load_config`'s success path: writes a
+      valid config file to a tmp path, points `SENTINEL_CONFIG_PATH` at
+      it, reloads `dashboard.main`, asserts `_load_config()` returns the
+      real parsed content (not `_DEFAULT_CONFIG`)
+- [x] Coverage re-measured from a genuinely fresh `git clone` into a
+      genuinely fresh venv — not the contaminated dev environment used
+      all session — confirmed no `config/settings.yaml` or other
+      gitignored state present before measuring. Honest baseline:
+      **97.05%** (305 stmts, 9 missed), `dashboard/main.py` 100%.
+      Independently reproduced by QA in a separate fresh clone.
+- [x] `--cov-fail-under` in `.github/workflows/ci.yml` set to 96 — real
+      margin clear of any rounding boundary given the 97.05% baseline
+- [x] `.coveragerc`'s `[report] precision` set to 2, with a comment at
+      the threshold explaining `round(X, 0)` can equal an integer
+      threshold and make `<` false even when the true value is below
+      intent
+- [x] Gate proven for real: `--cov-fail-under=100` pushed to scratch
+      branch `scratch/ds-017-prove-gate-fails`, PR #18 opened (never
+      merged) to trigger hosted CI, run watched to completion,
+      `conclusion:"failure"` confirmed via `gh run view --json
+      conclusion`. PR closed, branch deleted both locally and on origin.
+- [x] `pytest -m "not docker" -v` passes with 0 failures (no regressions)
+
+---
+
 ## DS-stretch-01 — Resource monitoring (CPU/memory trends)
 
 **Status:** DEFERRED
@@ -657,6 +717,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-014 | Live-DB integration test for dashboard read path | DONE |
 | DS-015 | Commit results.db seed-reset.sh and verify-data.sh adapter scripts | DONE |
 | DS-016 | Deterministic tests for dashboard's relative-timestamp branches | DONE |
+| DS-017 | Close _load_config success-path gap; fix coverage.py rounding footgun | DONE |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |

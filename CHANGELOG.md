@@ -1,5 +1,22 @@
 # CHANGELOG — docker-sentinel
 
+## DS-017 — Close `_load_config` success-path gap; fix coverage.py rounding footgun
+Two real bugs, both invisible all session due to a contaminated local
+dev venv (a real, gitignored `config/settings.yaml` masking a gap a
+fresh CI checkout always has). `dashboard/main.py` line 93
+(`_load_config`'s success path) had never been covered by any test, in
+any CI run, ever — closed with a new test in
+`tests/test_dashboard.py`. Separately, `coverage.py`'s `--cov-fail-under`
+compares the *rounded* percentage, not the raw one
+(`round(total, precision) < fail_under`, default `precision=0`) —
+DS-016's threshold of 97 sat exactly at the rounding boundary of the
+real 96.72% coverage, silently passing while `pytest-cov` printed a FAIL
+message. Fixed with `--cov-fail-under=96` (real margin below the honest,
+fresh-clone-measured 97.05% baseline) and `.coveragerc`'s
+`precision = 2`. Proven for real via a throwaway PR (#18, never merged)
+that pushed an unreachable threshold to a scratch branch and confirmed
+`conclusion:"failure"` on the hosted run.
+
 ## DS-016 — Deterministic tests for dashboard's relative-timestamp branches
 DS-013's hosted CI run passed the coverage gate at 96.07%, only 0.07
 points above threshold. Traced to `dashboard/main.py`'s `"just now"`/

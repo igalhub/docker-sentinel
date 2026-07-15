@@ -261,6 +261,19 @@ class TestAuth:
 # ---------------------------------------------------------------------------
 
 class TestConfigLoading:
+    def test_valid_yaml_returns_parsed_content(self, tmp_path, monkeypatch):
+        # Closes _load_config's only untested path — every other test here forces a fallback.
+        valid_config = tmp_path / "settings.yaml"
+        valid_config.write_text("checker:\n  interval_seconds: 123\ndashboard:\n  stale_multiplier: 4\n")
+        monkeypatch.setenv("SENTINEL_CONFIG_PATH", str(valid_config))
+        try:
+            importlib.reload(dashboard_main)
+            config = dashboard_main._load_config()
+            assert config == {"checker": {"interval_seconds": 123}, "dashboard": {"stale_multiplier": 4}}
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
     def test_malformed_yaml_falls_back_to_defaults(self, tmp_path, monkeypatch, caplog):
         bad_config = tmp_path / "settings.yaml"
         bad_config.write_text("checker: [unterminated flow mapping {\n")

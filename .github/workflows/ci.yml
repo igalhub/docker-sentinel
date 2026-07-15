@@ -25,4 +25,10 @@ jobs:
         run: ruff check .
 
       - name: Run offline tests with coverage gate
-        run: pytest -m "not docker" -v --cov=checker --cov=dashboard --cov-fail-under=97
+        # Threshold set with real margin below the honest, fresh-clone-measured
+        # 97.05% baseline (DS-017) — coverage.py's fail_under check compares the
+        # *rounded* percentage (round(x, precision) < fail_under), so a threshold
+        # sitting exactly at a value the real percentage rounds up to can silently
+        # pass while still printing a FAIL message. .coveragerc sets precision=2 to
+        # shrink that blind spot, but real margin here is what actually prevents it.
+        run: pytest -m "not docker" -v --cov=checker --cov=dashboard --cov-fail-under=96
