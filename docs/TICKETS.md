@@ -447,6 +447,60 @@ requiring its own ticket.
 
 ---
 
+## DS-015 — Commit results.db seed-reset.sh and verify-data.sh adapter scripts
+
+**Status:** DONE
+**Depends on:** none
+
+**Description:**
+`.claude/seed-reset.sh` and `.claude/verify-data.sh` were written and
+proven working during a deliberate exercise of `/seed-reset` and
+`/verify-data` — neither had ever been run against a real docker-sentinel
+database before. `seed-reset.sh` seeds/resets a target SQLite file via
+`checker.db`'s real `init_db`/`write_results` upsert pattern.
+`verify-data.sh` checks severity-value validity and freshness against the
+dashboard's staleness logic. Both scripts are safety-guarded to refuse to
+run against the real `results.db` path — this project's actual database
+is written every 5 minutes by a live systemd timer, and neither script
+may ever touch it, including after this ticket's edits.
+
+Two design decisions made explicitly as part of this ticket, not left
+ambiguous:
+
+1. **Staleness threshold:** `verify-data.sh` reads `interval_seconds` /
+   `stale_multiplier` from `config/settings.yaml`, the same way
+   `dashboard/main.py`'s `_load_config` does, with the same
+   fallback-to-defaults behavior and a logged warning on fallback. A
+   hardcoded value meant to mirror the dashboard's real config is exactly
+   the silent-drift risk DS-012 exists to prevent in a different file —
+   not reintroducing it here.
+2. **Baseline documentation:** the known-good seed baseline (container
+   names, severities, what each row is meant to exercise) is documented
+   via a comment block at the top of `seed-reset.sh` — no separate docs
+   file, appropriate for a project this size.
+
+**Acceptance criteria:**
+- [x] `.claude/seed-reset.sh` and `.claude/verify-data.sh` committed, both
+      retaining the hard rejection of the real `results.db` path — QA
+      re-confirms this guard still works after any edits by explicitly
+      passing the real path and confirming refusal
+- [x] `verify-data.sh`'s staleness threshold reads from
+      `config/settings.yaml` (`checker.interval_seconds` *
+      `dashboard.stale_multiplier`), tested against both the default
+      config and a deliberately different `stale_multiplier` to confirm
+      it is not hardcoded
+- [x] Baseline seed rows documented via a comment block in
+      `seed-reset.sh`, per decision above
+- [x] QA re-proves both detection directions after any changes: healthy
+      baseline → both checks pass; injected bad severity value →
+      flagged; injected all-stale state → flagged; exit codes correct in
+      all cases
+- [x] No changes to `checker/`, `dashboard/`, or any existing test — this
+      is `.claude/` tooling only
+- [x] `pytest -m "not docker" -v` passes with 0 failures (no regressions)
+
+---
+
 ## DS-013 — Add lint + coverage gate to CI
 
 **Status:** DEFERRED
@@ -539,6 +593,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-012 | Validate config/settings.yaml shape at load time | DEFERRED |
 | DS-013 | Add lint + coverage gate to CI | DEFERRED |
 | DS-014 | Live-DB integration test for dashboard read path | DONE |
+| DS-015 | Commit results.db seed-reset.sh and verify-data.sh adapter scripts | DONE |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |

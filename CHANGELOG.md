@@ -1,5 +1,15 @@
 # CHANGELOG — docker-sentinel
 
+## DS-015 — Commit results.db seed-reset.sh and verify-data.sh adapter scripts
+`.claude/seed-reset.sh` and `.claude/verify-data.sh` seed/verify a target
+SQLite file via `checker.db`'s real `init_db`/`write_results`/
+`read_results`/`get_last_checked`. Both refuse to run against the real
+`results.db` path (this project's actual DB is written every 5 minutes by
+a live systemd timer). `verify-data.sh`'s staleness threshold reads from
+`config/settings.yaml` the same way `dashboard/main.py` does, rather than
+hardcoding a value that could silently drift from the dashboard's real
+config.
+
 ## DS-014 — Live-DB integration test for dashboard read path
 `tests/test_dashboard_live_db.py` seeds a real SQLite file via
 `checker.db`'s real `init_db`/`write_results` and reads it back through
