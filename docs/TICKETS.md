@@ -406,6 +406,41 @@ isinstance check.
 
 ---
 
+## DS-013 — Add lint + coverage gate to CI
+
+**Status:** DEFERRED
+**Depends on:** none
+
+**Description:**
+`.github/workflows/ci.yml` runs the offline test suite only — no lint
+step, no coverage gate. Flagged as optional/low-priority in the same
+full code review pass that produced DS-011/DS-012.
+
+Scope is open-ended until someone actually runs `ruff check .` and
+`pytest --cov=checker --cov=dashboard` once to see current state — how
+many lint violations exist today (and whether they're real issues or
+noise from generated/vendored code like `dashboard/static/vendor/`)
+and what today's actual coverage percentage is. Don't guess at a lint
+ruleset or a coverage threshold before that discovery step; picking
+either upfront risks a threshold that's either trivially passing
+(useless) or immediately failing on unrelated pre-existing gaps
+(blocks unrelated PRs).
+
+**Acceptance criteria:**
+- [ ] Discovery: run `ruff check .` and `pytest --cov=checker
+      --cov=dashboard` locally once; record current violation count
+      and coverage percentage
+- [ ] Based on discovery, decide: fix existing lint violations before
+      adding the CI gate, or configure `ruff` to ignore/exclude what's
+      pre-existing (e.g. vendored assets) and gate only new violations
+- [ ] Add a `ruff check .` step to `.github/workflows/ci.yml`
+- [ ] Add a `pytest --cov=checker --cov=dashboard
+      --cov-fail-under=<threshold>` step, with `<threshold>` set from
+      the discovery step's actual measured coverage (not guessed)
+- [ ] CI passes green with both new steps
+
+---
+
 ## DS-014 — Live-DB integration test for dashboard read path
 
 **Status:** DONE
@@ -426,23 +461,23 @@ report it rather than fixing it inline; that would be a scope change
 requiring its own ticket.
 
 **Acceptance criteria:**
-- [ ] New test file `tests/test_dashboard_live_db.py` seeds a real SQLite
+- [x] New test file `tests/test_dashboard_live_db.py` seeds a real SQLite
       file via `checker.db.init_db` + `checker.db.write_results` (not
       `:memory:`, not mocks) with rows covering: one healthy container,
       one critical container, and one row old enough to trip the
       dashboard's staleness threshold
-- [ ] `dashboard/main.py` is pointed at that real file via its existing
+- [x] `dashboard/main.py` is pointed at that real file via its existing
       construction-time env var (`SENTINEL_DB_PATH`) with a module
       reload, matching the pattern already used in `test_dashboard.py`
       for construction-time env vars
-- [ ] `GET /status` (JSON) reflects the seeded severities, container
+- [x] `GET /status` (JSON) reflects the seeded severities, container
       names, and the correct `stale` boolean
-- [ ] `GET /` (HTML) reflects the same — severity badges and the
+- [x] `GET /` (HTML) reflects the same — severity badges and the
       staleness banner render correctly against the real seeded data
-- [ ] No changes to any file outside `tests/`
-- [ ] `pytest -m "not docker" -v` passes with 0 failures, including
+- [x] No changes to any file outside `tests/`
+- [x] `pytest -m "not docker" -v` passes with 0 failures, including
       every pre-existing test (no regressions)
-- [ ] QA report explicitly confirms this exercises the real read path
+- [x] QA report explicitly confirms this exercises the real read path
       end-to-end, not a re-skin of the existing mocked tests
 
 ---
@@ -498,41 +533,6 @@ ambiguous:
 - [x] No changes to `checker/`, `dashboard/`, or any existing test — this
       is `.claude/` tooling only
 - [x] `pytest -m "not docker" -v` passes with 0 failures (no regressions)
-
----
-
-## DS-013 — Add lint + coverage gate to CI
-
-**Status:** DEFERRED
-**Depends on:** none
-
-**Description:**
-`.github/workflows/ci.yml` runs the offline test suite only — no lint
-step, no coverage gate. Flagged as optional/low-priority in the same
-full code review pass that produced DS-011/DS-012.
-
-Scope is open-ended until someone actually runs `ruff check .` and
-`pytest --cov=checker --cov=dashboard` once to see current state — how
-many lint violations exist today (and whether they're real issues or
-noise from generated/vendored code like `dashboard/static/vendor/`)
-and what today's actual coverage percentage is. Don't guess at a lint
-ruleset or a coverage threshold before that discovery step; picking
-either upfront risks a threshold that's either trivially passing
-(useless) or immediately failing on unrelated pre-existing gaps
-(blocks unrelated PRs).
-
-**Acceptance criteria:**
-- [ ] Discovery: run `ruff check .` and `pytest --cov=checker
-      --cov=dashboard` locally once; record current violation count
-      and coverage percentage
-- [ ] Based on discovery, decide: fix existing lint violations before
-      adding the CI gate, or configure `ruff` to ignore/exclude what's
-      pre-existing (e.g. vendored assets) and gate only new violations
-- [ ] Add a `ruff check .` step to `.github/workflows/ci.yml`
-- [ ] Add a `pytest --cov=checker --cov=dashboard
-      --cov-fail-under=<threshold>` step, with `<threshold>` set from
-      the discovery step's actual measured coverage (not guessed)
-- [ ] CI passes green with both new steps
 
 ---
 
