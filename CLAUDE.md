@@ -30,7 +30,7 @@ uvicorn dashboard.main:app --host 0.0.0.0 --port 8080
 
 **Tests:**
 ```bash
-# Offline suite — no Docker daemon required (what CI runs):
+# Offline suite — no Docker daemon required:
 pytest -m "not docker" -v
 
 # Live Docker suite — requires Docker daemon and permission to create containers:
