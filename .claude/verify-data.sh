@@ -39,6 +39,19 @@ VALID_SEVERITIES = {"healthy", "warning", "critical", "unknown"}
 _DEFAULT_CONFIG = {"checker": {"interval_seconds": 300}, "dashboard": {"stale_multiplier": 2}}
 
 
+def _is_valid_config_shape(config):
+    # Mirrors dashboard/main.py's _is_valid_config_shape exactly.
+    if not isinstance(config, dict):
+        return False
+    checker = config.get("checker")
+    if not isinstance(checker, dict) or not isinstance(checker.get("interval_seconds"), (int, float)):
+        return False
+    dashboard = config.get("dashboard")
+    if not isinstance(dashboard, dict) or not isinstance(dashboard.get("stale_multiplier"), (int, float)):
+        return False
+    return True
+
+
 def _load_config(path):
     # Mirrors dashboard/main.py's _load_config exactly, so this threshold
     # never drifts from what the live dashboard actually enforces.
@@ -50,8 +63,8 @@ def _load_config(path):
     except yaml.YAMLError:
         print(f"config_load | WARN | {path} is malformed YAML — falling back to default config", file=sys.stderr)
         return _DEFAULT_CONFIG
-    if config is None:
-        print(f"config_load | WARN | {path} is empty or contains no YAML content — falling back to default config", file=sys.stderr)
+    if not _is_valid_config_shape(config):
+        print(f"config_load | WARN | {path} does not match the expected config shape — falling back to default config", file=sys.stderr)
         return _DEFAULT_CONFIG
     return config
 

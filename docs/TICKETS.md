@@ -376,7 +376,7 @@ those routes outright when `SENTINEL_DASHBOARD_USER` is set.
 
 ## DS-012 — Validate config/settings.yaml shape at load time
 
-**Status:** DEFERRED
+**Status:** DONE
 **Depends on:** none
 
 **Description:**
@@ -392,17 +392,31 @@ the full expected shape once at load time (required top-level keys, or a
 lightweight Pydantic model for `config/settings.yaml`), not another
 isinstance check.
 
+Implemented with manual validation (a new `_is_valid_config_shape()`
+helper), not Pydantic: the shape is trivial (two nested numeric keys),
+Pydantic would be new API surface for a project that's never used it
+directly, and `.claude/verify-data.sh`'s standalone mirror would need the
+same new import for no real benefit. `_is_valid_config_shape` uses
+defensive `.get()` + `isinstance` checks at every level (never bracket
+indexing) so the validator itself can't crash trying to fix a crash.
+Applied identically to `.claude/verify-data.sh`'s copy, which QA
+independently re-verified stays behaviorally accurate. The original bug
+was reproduced for real (a scalar `"disabled"` config genuinely crashed
+`GET /status` with `TypeError: string indices must be integers, not
+'str'` before the fix) and confirmed fixed end-to-end, not just at the
+unit level.
+
 **Acceptance criteria:**
-- [ ] `_load_config()` validates the loaded config against the expected
+- [x] `_load_config()` validates the loaded config against the expected
       shape (required keys: `checker.interval_seconds`,
       `dashboard.stale_multiplier`) once, rather than checking for
       individual malformed shapes ad hoc
-- [ ] Any invalid shape (wrong type, missing required key) falls back to
+- [x] Any invalid shape (wrong type, missing required key) falls back to
       `_DEFAULT_CONFIG` with a single logged warning, same as the existing
       `FileNotFoundError`/`YAMLError`/`None` cases
-- [ ] Tests cover: non-dict top-level YAML (scalar, list), missing required
+- [x] Tests cover: non-dict top-level YAML (scalar, list), missing required
       keys, wrong value types
-- [ ] `pytest -m "not docker" -v` passes with 0 failures
+- [x] `pytest -m "not docker" -v` passes with 0 failures
 
 ---
 
@@ -712,7 +726,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-009 | Home lab deployment documentation | DONE |
 | DS-010 | Security hardening pass | DONE |
 | DS-011 | Fix FastAPI docs/redoc/openapi auth bypass | DONE |
-| DS-012 | Validate config/settings.yaml shape at load time | DEFERRED |
+| DS-012 | Validate config/settings.yaml shape at load time | DONE |
 | DS-013 | Add lint + coverage gate to CI | DONE |
 | DS-014 | Live-DB integration test for dashboard read path | DONE |
 | DS-015 | Commit results.db seed-reset.sh and verify-data.sh adapter scripts | DONE |

@@ -72,6 +72,18 @@ async def security_headers(request: Request, call_next):
 _DEFAULT_CONFIG = {"checker": {"interval_seconds": 300}, "dashboard": {"stale_multiplier": 2}}
 
 
+def _is_valid_config_shape(config: object) -> bool:
+    if not isinstance(config, dict):
+        return False
+    checker = config.get("checker")
+    if not isinstance(checker, dict) or not isinstance(checker.get("interval_seconds"), (int, float)):
+        return False
+    dashboard = config.get("dashboard")
+    if not isinstance(dashboard, dict) or not isinstance(dashboard.get("stale_multiplier"), (int, float)):
+        return False
+    return True
+
+
 def _load_config() -> dict:
     try:
         with open(CONFIG_PATH) as f:
@@ -84,9 +96,11 @@ def _load_config() -> dict:
         )
         return _DEFAULT_CONFIG
 
-    if config is None:
+    if not _is_valid_config_shape(config):
         logger.warning(
-            "%s is empty or contains no YAML content — falling back to default config",
+            "%s does not match the expected config shape (missing or invalid "
+            "checker.interval_seconds / dashboard.stale_multiplier) — "
+            "falling back to default config",
             CONFIG_PATH,
         )
         return _DEFAULT_CONFIG

@@ -295,7 +295,78 @@ class TestConfigLoading:
             importlib.reload(dashboard_main)
             config = dashboard_main._load_config()
             assert config == dashboard_main._DEFAULT_CONFIG
-            assert "empty" in caplog.text.lower()
+            assert "expected config shape" in caplog.text.lower()
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+    def test_scalar_yaml_falls_back_to_defaults(self, tmp_path, monkeypatch, caplog):
+        scalar_config = tmp_path / "settings.yaml"
+        scalar_config.write_text("disabled\n")
+        monkeypatch.setenv("SENTINEL_CONFIG_PATH", str(scalar_config))
+        try:
+            importlib.reload(dashboard_main)
+            config = dashboard_main._load_config()
+            assert config == dashboard_main._DEFAULT_CONFIG
+            assert "expected config shape" in caplog.text.lower()
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+    def test_list_yaml_falls_back_to_defaults(self, tmp_path, monkeypatch, caplog):
+        list_config = tmp_path / "settings.yaml"
+        list_config.write_text("- checker\n- dashboard\n")
+        monkeypatch.setenv("SENTINEL_CONFIG_PATH", str(list_config))
+        try:
+            importlib.reload(dashboard_main)
+            config = dashboard_main._load_config()
+            assert config == dashboard_main._DEFAULT_CONFIG
+            assert "expected config shape" in caplog.text.lower()
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+    def test_missing_required_key_falls_back_to_defaults(self, tmp_path, monkeypatch, caplog):
+        missing_key_config = tmp_path / "settings.yaml"
+        missing_key_config.write_text("checker:\n  interval_seconds: 300\n")
+        monkeypatch.setenv("SENTINEL_CONFIG_PATH", str(missing_key_config))
+        try:
+            importlib.reload(dashboard_main)
+            config = dashboard_main._load_config()
+            assert config == dashboard_main._DEFAULT_CONFIG
+            assert "expected config shape" in caplog.text.lower()
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+    def test_wrong_value_type_falls_back_to_defaults(self, tmp_path, monkeypatch, caplog):
+        wrong_type_config = tmp_path / "settings.yaml"
+        wrong_type_config.write_text(
+            "checker:\n  interval_seconds: \"soon\"\ndashboard:\n  stale_multiplier: 2\n"
+        )
+        monkeypatch.setenv("SENTINEL_CONFIG_PATH", str(wrong_type_config))
+        try:
+            importlib.reload(dashboard_main)
+            config = dashboard_main._load_config()
+            assert config == dashboard_main._DEFAULT_CONFIG
+            assert "expected config shape" in caplog.text.lower()
+        finally:
+            monkeypatch.undo()
+            importlib.reload(dashboard_main)
+
+    def test_intermediate_key_wrong_type_falls_back_to_defaults(self, tmp_path, monkeypatch, caplog):
+        # config itself is a valid dict, but "checker" is a scalar, not a nested
+        # mapping — different failure mode than the top-level scalar/list cases
+        # above: this exercises the isinstance-before-.get() guard on an
+        # intermediate key, not just the outermost config value.
+        bad_intermediate_config = tmp_path / "settings.yaml"
+        bad_intermediate_config.write_text("checker: oops\ndashboard:\n  stale_multiplier: 2\n")
+        monkeypatch.setenv("SENTINEL_CONFIG_PATH", str(bad_intermediate_config))
+        try:
+            importlib.reload(dashboard_main)
+            config = dashboard_main._load_config()
+            assert config == dashboard_main._DEFAULT_CONFIG
+            assert "expected config shape" in caplog.text.lower()
         finally:
             monkeypatch.undo()
             importlib.reload(dashboard_main)

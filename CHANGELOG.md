@@ -1,5 +1,17 @@
 # CHANGELOG — docker-sentinel
 
+## DS-012 — Validate config/settings.yaml shape at load time
+`dashboard/main.py`'s `_load_config()` special-cased malformed shapes one
+at a time and still crashed `_is_stale()` with a `TypeError` on a
+top-level YAML scalar or list (valid YAML, parses without raising, isn't
+`None`). Fixed with a single `_is_valid_config_shape()` validator (manual
+`isinstance`/`.get()` checks, not Pydantic — the shape is two nested
+numeric keys, too trivial to justify new API surface across both
+`dashboard/main.py` and `.claude/verify-data.sh`'s standalone mirror,
+which got the identical fix). Reproduced the original crash for real
+(`GET /status` genuinely raised `TypeError: string indices must be
+integers, not 'str'` on a scalar config) before confirming the fix.
+
 ## DS-017 — Close `_load_config` success-path gap; fix coverage.py rounding footgun
 Two real bugs, both invisible all session due to a contaminated local
 dev venv (a real, gitignored `config/settings.yaml` masking a gap a
