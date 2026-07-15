@@ -128,6 +128,32 @@ class TestRootEndpoint:
         text = client.get("/").text
         assert "STALE" not in text
 
+    def test_last_checked_str_just_now(self):
+        # Frozen "now" removes real elapsed wall-clock time as a variable — the
+        # RECENT/STALE constants above are always ~60s/700s old *plus* however
+        # long the test session has been running, so neither can deterministically
+        # land in the "just now" (age < 60) branch.
+        frozen_now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        with (
+            patch("dashboard.main.datetime") as mock_datetime,
+            patch("dashboard.main.read_results", return_value=[]),
+            patch("dashboard.main.get_last_checked", return_value=frozen_now - timedelta(seconds=30)),
+        ):
+            mock_datetime.now.return_value = frozen_now
+            text = client.get("/").text
+        assert "just now" in text
+
+    def test_last_checked_str_hours_ago(self):
+        frozen_now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        with (
+            patch("dashboard.main.datetime") as mock_datetime,
+            patch("dashboard.main.read_results", return_value=[]),
+            patch("dashboard.main.get_last_checked", return_value=frozen_now - timedelta(hours=2)),
+        ):
+            mock_datetime.now.return_value = frozen_now
+            text = client.get("/").text
+        assert "2 hour(s) ago" in text
+
     def test_empty_db_shows_no_containers_message(self, empty_db):
         assert "No containers found" in client.get("/").text
 

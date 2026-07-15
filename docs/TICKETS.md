@@ -548,6 +548,56 @@ ambiguous:
 
 ---
 
+## DS-016 — Deterministic tests for dashboard's relative-timestamp branches
+
+**Status:** DONE
+**Depends on:** DS-013
+
+**Description:**
+DS-013's hosted CI run passed the coverage gate at 96.07%, only 0.07
+points above the 96% threshold — thinner margin than intended. Traced to
+`dashboard/main.py` lines 129 and 133 (the `"just now"` and
+`"X hour(s) ago"` branches of the relative-timestamp formatter):
+confirmed via 5 stable local coverage runs that these two lines are
+**permanently** uncovered by the existing test suite, not intermittently
+flaky. `RECENT`/`RECENT_TS` in `tests/test_dashboard.py` and
+`tests/test_dashboard_live_db.py` are computed once at collection time as
+`now - 60s`; by request time, real elapsed time always pushes `age`
+slightly past 60s, so `"just now"` (`age < 60`) can never fire. Neither
+file has a fixture near the 3600s boundary either, so `"X hour(s) ago"`
+is never exercised.
+
+Residual, deliberately unresolved: the hosted run's exact discrepancy
+(96.07% vs. a local 96.39% on the same commit — 3 vs. 2 lines missed in
+`dashboard/main.py`) was investigated (checked for randomization plugins,
+other environment-sensitive lines) but the exact third missing line
+could not be identified, since the CI workflow doesn't capture
+`--cov-report=term-missing` detail. Not chased further — noted here for
+the record, not treated as blocking.
+
+**Acceptance criteria:**
+- [x] Two new deterministic tests added (`tests/test_dashboard.py`, since
+      that's where the existing relative-timestamp assertions live):
+      one freezing "now" via `patch("dashboard.main.datetime")` with
+      `last_checked` 30s before frozen-now (asserts `"just now"`), one
+      with `last_checked` 2 hours before frozen-now (asserts
+      `"X hour(s) ago"`) — confirmed safe since `dashboard/main.py` only
+      ever calls `datetime.now(timezone.utc)`, nothing else from the
+      `datetime` class
+- [x] Coverage re-measured for real after the new tests land (not
+      guessed); `--cov-fail-under` in `.github/workflows/ci.yml` updated
+      to reflect the actual new measured percentage (97%, actual 97.05%),
+      not left at 96 with stale slack
+- [x] Cross-file state-leakage check re-run (`pytest -k "test_check or
+      test_dashboard or test_dashboard_live_db"`, both forward and
+      reverse file order) since this touches `tests/test_dashboard.py`
+      again
+- [x] `pytest -m "not docker" -v` passes with 0 failures (no regressions)
+- [x] No changes to `dashboard/main.py` or any other production code —
+      test-only
+
+---
+
 ## DS-stretch-01 — Resource monitoring (CPU/memory trends)
 
 **Status:** DEFERRED
@@ -606,6 +656,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-013 | Add lint + coverage gate to CI | DONE |
 | DS-014 | Live-DB integration test for dashboard read path | DONE |
 | DS-015 | Commit results.db seed-reset.sh and verify-data.sh adapter scripts | DONE |
+| DS-016 | Deterministic tests for dashboard's relative-timestamp branches | DONE |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |

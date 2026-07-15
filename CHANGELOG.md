@@ -1,5 +1,20 @@
 # CHANGELOG — docker-sentinel
 
+## DS-016 — Deterministic tests for dashboard's relative-timestamp branches
+DS-013's hosted CI run passed the coverage gate at 96.07%, only 0.07
+points above threshold. Traced to `dashboard/main.py`'s `"just now"`/
+`"X hour(s) ago"` relative-timestamp branches being permanently
+uncovered (not intermittently flaky — confirmed via repeated stable
+local runs) since no existing fixture's `last_checked` timestamp lands
+near either boundary. Added two deterministic tests
+(`tests/test_dashboard.py`) freezing "now" via
+`patch("dashboard.main.datetime")`. `dashboard/main.py` is now 100%
+covered; `--cov-fail-under` raised `96 → 97` to match the real
+re-measured total (97.05%). The hosted-run's exact 96.07% vs. local
+96.39% discrepancy (3 vs. 2 missed lines) was investigated but the
+precise third line was never identified — noted as unresolved, not
+blocking.
+
 ## DS-013 — Add lint + coverage gate to CI
 `.github/workflows/ci.yml` now runs `ruff check .` and
 `pytest --cov=checker --cov=dashboard --cov-fail-under=96`. Discovery

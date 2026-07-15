@@ -25,4 +25,4 @@ jobs:
         run: ruff check .
 
       - name: Run offline tests with coverage gate
-        run: pytest -m "not docker" -v --cov=checker --cov=dashboard --cov-fail-under=96
+        run: pytest -m "not docker" -v --cov=checker --cov=dashboard --cov-fail-under=97
