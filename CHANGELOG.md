@@ -1,5 +1,13 @@
 # CHANGELOG — docker-sentinel
 
+## DS-014 — Live-DB integration test for dashboard read path
+`tests/test_dashboard_live_db.py` seeds a real SQLite file via
+`checker.db`'s real `init_db`/`write_results` and reads it back through
+`dashboard/main.py`'s real `read_results`/`get_last_checked` — no mocks.
+Covers healthy/critical severities and staleness detection in both
+`GET /status` and `GET /`. Closes the gap where every prior dashboard
+test mocked the DB read path outright.
+
 ## DS-011 — Fix FastAPI docs/redoc/openapi auth bypass
 FastAPI's auto-registered `/docs`, `/redoc`, and `/openapi.json` routes
 were wired up in the `FastAPI()` constructor itself, before any

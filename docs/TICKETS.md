@@ -408,7 +408,7 @@ isinstance check.
 
 ## DS-014 — Live-DB integration test for dashboard read path
 
-**Status:** READY
+**Status:** DONE
 **Depends on:** none
 
 **Description:**
@@ -538,7 +538,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-011 | Fix FastAPI docs/redoc/openapi auth bypass | DONE |
 | DS-012 | Validate config/settings.yaml shape at load time | DEFERRED |
 | DS-013 | Add lint + coverage gate to CI | DEFERRED |
-| DS-014 | Live-DB integration test for dashboard read path | READY |
+| DS-014 | Live-DB integration test for dashboard read path | DONE |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |
