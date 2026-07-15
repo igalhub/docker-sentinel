@@ -406,6 +406,47 @@ isinstance check.
 
 ---
 
+## DS-014 — Live-DB integration test for dashboard read path
+
+**Status:** READY
+**Depends on:** none
+
+**Description:**
+Every existing dashboard test (`tests/test_dashboard.py`) mocks
+`read_results`/`get_last_checked` outright — the real SQLite read path
+between `checker/db.py`'s `init_db`/`write_results` and `dashboard/main.py`'s
+`read_results`/`get_last_checked` has never been exercised end-to-end by
+the test suite. This ticket adds that missing coverage using a real
+SQLite file, not `:memory:` and not mocks.
+
+Test-only change. No edits to `checker/` or `dashboard/main.py` or any
+other production code path — docker-sentinel is live in production. If
+implementing this test surfaces a real bug in the read path, stop and
+report it rather than fixing it inline; that would be a scope change
+requiring its own ticket.
+
+**Acceptance criteria:**
+- [ ] New test file `tests/test_dashboard_live_db.py` seeds a real SQLite
+      file via `checker.db.init_db` + `checker.db.write_results` (not
+      `:memory:`, not mocks) with rows covering: one healthy container,
+      one critical container, and one row old enough to trip the
+      dashboard's staleness threshold
+- [ ] `dashboard/main.py` is pointed at that real file via its existing
+      construction-time env var (`SENTINEL_DB_PATH`) with a module
+      reload, matching the pattern already used in `test_dashboard.py`
+      for construction-time env vars
+- [ ] `GET /status` (JSON) reflects the seeded severities, container
+      names, and the correct `stale` boolean
+- [ ] `GET /` (HTML) reflects the same — severity badges and the
+      staleness banner render correctly against the real seeded data
+- [ ] No changes to any file outside `tests/`
+- [ ] `pytest -m "not docker" -v` passes with 0 failures, including
+      every pre-existing test (no regressions)
+- [ ] QA report explicitly confirms this exercises the real read path
+      end-to-end, not a re-skin of the existing mocked tests
+
+---
+
 ## DS-013 — Add lint + coverage gate to CI
 
 **Status:** DEFERRED
@@ -497,6 +538,7 @@ and can be polled by any external alerting system in the meantime.
 | DS-011 | Fix FastAPI docs/redoc/openapi auth bypass | DONE |
 | DS-012 | Validate config/settings.yaml shape at load time | DEFERRED |
 | DS-013 | Add lint + coverage gate to CI | DEFERRED |
+| DS-014 | Live-DB integration test for dashboard read path | READY |
 | DS-stretch-01 | Resource monitoring | DEFERRED |
 | DS-stretch-02 | Log error detection | DEFERRED |
 | DS-stretch-03 | Multi-host | DEFERRED |
